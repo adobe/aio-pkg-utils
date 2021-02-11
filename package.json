@@ -1,0 +1,29 @@
+{
+  "name": "aio-exc-app",
+  "version": "0.1.0",
+  "description": "Client helper functions for firefly apps running in experience.adobe.com unified shell",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/purplecabbage/aio-exc-app.git"
+  },
+  "keywords": [
+    "firefly",
+    "serverless",
+    "cloud-native",
+    "adobe",
+    "runtime"
+  ],
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/purplecabbage/aio-exc-app/issues"
+  },
+  "homepage": "https://github.com/purplecabbage/aio-exc-app#readme",
+  "dependencies": {
+    "@adobe/exc-app": "^0.2.25"
+  }
+}
