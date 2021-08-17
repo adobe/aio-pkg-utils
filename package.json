@@ -1,8 +1,7 @@
 {
-  "name": "aio-exc-app",
+  "name": "@adobe/aio-exc-app",
   "version": "0.1.0",
   "description": "Client helper functions for firefly apps running in experience.adobe.com unified shell",
-  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
