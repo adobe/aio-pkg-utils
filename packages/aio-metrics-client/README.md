@@ -1,14 +1,9 @@
-# aio-lib-metrics
+# aio-metrics-client
 
-This library is for enabling tracking of our App Builder services and is not expected to be used by third-parties.
-This is not for customer actions and they are not expected to install it as part of their App Builder projects.
+This library is for enabling tracking of our App Builder services.
 
-This will be used by following services/actions:
+[![Version](https://img.shields.io/npm/v/@adobe/aio-metrics-client.svg)](https://npmjs.org/package/@adobe/aio-metrics-client)
 
-  - TVM
-  - AppBuilder Catalog
-  - Login 
-  - Validator
 
 ## Usage
 ```
@@ -16,7 +11,7 @@ This will be used by following services/actions:
 const { setMetricsURL, incBatchCounter } = require('../src/index')
 
 // Setting the URL to send the batched metrics to
-setMetricsURL('https://devxmetricsservice-dev-va7.stage.cloud.adobe.io/recordtvmmetrics')
+setMetricsURL('https://...<your server>...')
 
 // Incrementing the count of a metric for a specific namespace. eg:- 'requestCount'
 await incBatchCounter('requestCount', 'mynamespace')

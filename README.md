@@ -7,6 +7,7 @@ This helper library contains function you can use in your application.
 
 ## aio-metrics-client
 Node client for batching calls to metrics endpoint.
+[![Version](https://img.shields.io/npm/v/@adobe/aio-metrics-client.svg)](https://npmjs.org/package/@adobe/aio-metrics-client)
 
 
 
