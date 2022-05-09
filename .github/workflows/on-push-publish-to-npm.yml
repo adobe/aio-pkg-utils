@@ -1,5 +1,6 @@
 name: on-push-publish-to-npm
 on:
+  workflow_dispatch:
   push:
     branches:
       - master # Change this if not your default branch
