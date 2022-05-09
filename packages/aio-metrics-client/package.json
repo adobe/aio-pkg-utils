@@ -1,0 +1,22 @@
+{
+  "name": "@adobe/aio-metrics-client",
+  "version": "0.0.2",
+  "private": false,
+  "main": "src/index.js",
+  "files": [
+    "/src"
+  ],
+  "dependencies": {
+    "node-fetch": "^2.6.0"
+  },
+  "devDependencies": {
+    "jest": "^27.2.4"
+  },
+  "scripts": {
+    "test": "jest --passWithNoTests ./test",
+    "e2e": "jest --collectCoverage=false --testRegex ./e2e"
+  },
+  "engines": {
+    "node": "^14"
+  }
+}
