@@ -15,9 +15,11 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 14
-      - run: cd packages/aio-metrics-client/
-      - run: npm install
-      - run: npm test
+      - name: npm install, test, and publish
+        run: |
+          cd 'packages/aio-metrics-client/'
+          npm install
+          npm test
       - uses: JS-DevTools/npm-publish@v1
         with:
           dry-run: true
