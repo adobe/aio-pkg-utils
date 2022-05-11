@@ -22,7 +22,7 @@ async function processBatchCounter() {
   if (metricsURL) {
     Object.keys(batchedMetrics).forEach(async (metricName) => {
       console.log('Sending Batch metrics for ' + metricName)
-      const postBody = JSON.stringify({metric: metricName, data: batchedMetrics[metricName], endpoint: metricsEndPoint})
+      const postBody = JSON.stringify( { metrics_data: { metric: metricName, data: batchedMetrics[metricName] }, endpoint: metricsEndPoint } )
       delete batchedMetrics.metricName
       const reqData = {
         method: 'POST',
