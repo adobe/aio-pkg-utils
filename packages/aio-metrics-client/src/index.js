@@ -20,9 +20,14 @@ function setMetricsConfig (metricsPostURL, endpoint) {
 async function processBatchCounter() {
   batchTimerSet = false
   if (metricsURL) {
+    //get action namespace and auth
+    const namespace = process.env.__OW_NAMESPACE
+    const auth = process.env.__OW_API_KEY
+    
     Object.keys(batchedMetrics).forEach(async (metricName) => {
       console.log('Sending Batch metrics for ' + metricName)
-      const postBody = JSON.stringify( { metrics_data: { metric: metricName, data: batchedMetrics[metricName] }, endpoint: metricsEndPoint } )
+      const postBody = JSON.stringify( { metrics_data: { metric: metricName, data: batchedMetrics[metricName] }, endpoint: metricsEndPoint,
+      namespace: namespace, auth: auth } )
       delete batchedMetrics.metricName
       const reqData = {
         method: 'POST',
