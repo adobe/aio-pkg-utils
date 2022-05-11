@@ -2,6 +2,7 @@ let batchedMetrics = {}
 let metricsMetadata = {}
 let batchTimerSet = false
 let metricsURL = ''
+let metricsEndPoint
 
 const fetch = require('node-fetch')
 
@@ -10,9 +11,10 @@ function createMetric (metricName, labels) {
   console.log(metricsMetadata)
 }
 
-function setMetricsURL (metricsPostURL) {
-  console.log('setting the metrics url')
+function setMetricsConfig (metricsPostURL, endpoint) {
+  console.log('setting metrics config')
   metricsURL = metricsPostURL
+  metricsEndPoint = endpoint
 }
 
 async function processBatchCounter() {
@@ -20,7 +22,7 @@ async function processBatchCounter() {
   if (metricsURL) {
     Object.keys(batchedMetrics).forEach(async (metricName) => {
       console.log('Sending Batch metrics for ' + metricName)
-      const postBody = JSON.stringify({metric: metricName, data: batchedMetrics[metricName]})
+      const postBody = JSON.stringify({metric: metricName, data: batchedMetrics[metricName], endpoint: metricsEndPoint})
       delete batchedMetrics.metricName
       const reqData = {
         method: 'POST',
@@ -66,6 +68,6 @@ async function incBatchCounter (metricName, namespace, label) {
 
 module.exports = {
     createMetric,
-    setMetricsURL,
+    setMetricsConfig,
     incBatchCounter
 }
