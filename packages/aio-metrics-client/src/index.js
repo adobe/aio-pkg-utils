@@ -11,7 +11,6 @@ function createMetric (metricName, labels) {
 }
 
 function setMetricsURL (metricsPostURL) {
-  console.log('setting the metrics url')
   metricsURL = metricsPostURL
 }
 
@@ -19,9 +18,9 @@ async function processBatchCounter() {
   batchTimerSet = false
   if (metricsURL) {
     Object.keys(batchedMetrics).forEach(async (metricName) => {
-      console.log('Sending Batch metrics for ' + metricName)
+      console.log('Sending Batch metrics for ', metricName, batchedMetrics[metricName])
       const postBody = JSON.stringify({metric: metricName, data: batchedMetrics[metricName]})
-      delete batchedMetrics.metricName
+      delete batchedMetrics[metricName]
       const reqData = {
         method: 'POST',
         headers: {
@@ -29,9 +28,7 @@ async function processBatchCounter() {
         },
         body: postBody
       }
-      // console.log(reqData)
       const response = await fetch(metricsURL, reqData)
-      // console.log(response)
     })
   } else {
     console.log('metricsURL not set, batchedMetrics still present')
