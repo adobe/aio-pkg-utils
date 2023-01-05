@@ -15,3 +15,4 @@
   test('each repo array item must have a \'repo\' property', () => {
     metadata.repos.forEach(item => expect(item.repo).toBeDefined())
   })
+  
