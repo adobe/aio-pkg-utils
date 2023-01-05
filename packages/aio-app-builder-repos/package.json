@@ -1,8 +1,8 @@
 {
   "name": "@adobe/aio-app-builder-repos",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
-  "main": "jest test",
+  "main": "index.js",
   "scripts": {
     "test": "jest test"
   },
