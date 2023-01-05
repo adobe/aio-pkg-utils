@@ -6,7 +6,7 @@ Mono-repo containing various utility libs in independent packages.
   - This helper library contains function you can use in your application.
 - [aio-metrics-client](./packages/aio-metrics-client/README.md) [![Version](https://img.shields.io/npm/v/@adobe/aio-metrics-client.svg)](https://npmjs.org/package/@adobe/aio-metrics-client)
   - Node client for batching calls to metrics endpoint.
-- [aio-app-builder-repos](./packages/aio-app-builder-repos/README.md)
+- [aio-app-builder-repos](./packages/aio-app-builder-repos/README.md) [![Version](https://img.shields.io/npm/v/@adobe/aio-app-builder-repos.svg)](https://npmjs.org/package/@adobe/aio-app-builder-repos)
   - Metadata of all the repos Adobe Developer App Builder uses
 
 ## Contributing
