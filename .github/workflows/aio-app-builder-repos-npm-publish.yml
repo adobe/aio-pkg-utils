@@ -1,0 +1,27 @@
+name: Npm Publish for aio-app-builder-repos
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master # Change this if not your default branch
+    paths:
+      - 'packages/aio-app-builder-repos/package.json'
+jobs:
+  publish:
+    if: github.repository_owner == 'adobe'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+      - name: npm install, test, and publish
+        run: |
+          cd 'packages/aio-app-builder-repos/'
+          npm install
+          npm test
+      - uses: JS-DevTools/npm-publish@v1
+        with:
+          package: packages/aio-app-builder-repos/package.json
+          token: ${{ secrets.ADOBE_BOT_NPM_TOKEN }}
+          access: 'public'
