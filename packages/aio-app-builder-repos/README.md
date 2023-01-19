@@ -26,3 +26,12 @@ const { defaultHost, defaultJiraProject, repos } = require('@adobe/aio-app-build
 
 repos.forEach(item => console.log(item.repo))
 ```
+
+## Repo Overrides
+
+There are the `defaultHost` and `defaultJiraProject` items in the object returned by the module. Each repo item can override these values. 
+
+The keys used to override these values on a per repo basis are:
+
+1. `host` (url) (overrides `defaultHost`)
+2. `jira_project` (string) (overrides `defaultJiraProject`)
