@@ -10,7 +10,7 @@
   "author": "Adobe Inc.",
   "license": "Apache-2.0",
   "repository": {
-    "url": "https://github.com/adobe/aio-pkg-utils"
+    "url": "https://github.com/adobe/aio-pkg-utils/tree/master/packages/aio-app-builder-repos"
   },
   "devDependencies": {
     "jest": "^29.3.1"
