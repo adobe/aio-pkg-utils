@@ -56,5 +56,6 @@
   { "repo": "adobe/aio-cli-setup-action", "components": ["CLI"] },
   { "repo": "adobe/aio-apps-action", "components": ["CLI"] },
   { "repo": "AdobeDocs/project-firefly", "components": ["DOCUMENTATION"], "jira_project": "AIOE" },
-  { "repo": "adobe/inquirer-table-checkbox", "components": ["Utilities"] }
+  { "repo": "adobe/inquirer-table-checkbox", "components": ["Utilities"] },
+  { "repo": "adobe/update-prerelease-npm-version", "components": ["Utilities"] }
 ]
