@@ -102,12 +102,8 @@ function stringParameters (params) {
    *
    */
   function getBearerToken (params) {
-    if (params.__ow_headers &&
-        params.__ow_headers.authorization &&
-        params.__ow_headers.authorization.startsWith('Bearer ')) {
-      return params.__ow_headers.authorization.substring('Bearer '.length)
-    }
-    return undefined
+    const [,token] = params?.__ow_headers?.authorization?.split?.('Bearer ')
+    return token
   }
   /**
    *
