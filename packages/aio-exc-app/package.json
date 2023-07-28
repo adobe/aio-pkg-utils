@@ -10,11 +10,10 @@
     "url": "git+https://github.com/purplecabbage/aio-exc-app.git"
   },
   "keywords": [
-    "firefly",
     "serverless",
     "cloud-native",
     "adobe",
-    "runtime"
+    "adobe-runtime"
   ],
   "author": "",
   "license": "Apache-2.0",
@@ -23,6 +22,5 @@
   },
   "homepage": "https://github.com/purplecabbage/aio-exc-app#readme",
   "dependencies": {
-    "@adobe/exc-app": "^0.2.25"
   }
 }
