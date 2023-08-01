@@ -102,7 +102,7 @@ function stringParameters (params) {
    *
    */
   function getBearerToken (params) {
-    const [,token] = params?.__ow_headers?.authorization?.split?.('Bearer ')
+    const [,token] = params?.__ow_headers?.authorization?.split?.('Bearer ') || []
     return token
   }
   /**

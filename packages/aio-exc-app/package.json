@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Client helper functions for firefly apps running in experience.adobe.com unified shell",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --coverage"
   },
   "repository": {
     "type": "git",
@@ -22,5 +22,8 @@
   },
   "homepage": "https://github.com/purplecabbage/aio-exc-app#readme",
   "dependencies": {
+  },
+  "devDependencies": {
+    "jest": "^28.1.3"
   }
 }
