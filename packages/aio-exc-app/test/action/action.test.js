@@ -15,20 +15,22 @@ const {
     getBearerToken,
     stringParameters,
     checkMissingRequestInputs
-} = require('../action/index')
+} = require('../../action/')
 
-test('api existence', () => {
-    expect(errorResponse).toBeDefined()
-    expect(typeof errorResponse).toBe('function')
+describe('api', () => {
+    test('functions exist', () => {
+        expect(errorResponse).toBeDefined()
+        expect(typeof errorResponse).toBe('function')
 
-    expect(getBearerToken).toBeDefined()
-    expect(typeof getBearerToken).toBe('function')
+        expect(getBearerToken).toBeDefined()
+        expect(typeof getBearerToken).toBe('function')
 
-    expect(stringParameters).toBeDefined()
-    expect(typeof stringParameters).toBe('function')
+        expect(stringParameters).toBeDefined()
+        expect(typeof stringParameters).toBe('function')
 
-    expect(checkMissingRequestInputs).toBeDefined()
-    expect(typeof checkMissingRequestInputs).toBe('function')
+        expect(checkMissingRequestInputs).toBeDefined()
+        expect(typeof checkMissingRequestInputs).toBe('function')
+    })
 })
 
 

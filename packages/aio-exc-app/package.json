@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "description": "Client helper functions for firefly apps running in experience.adobe.com unified shell",
   "scripts": {
-    "test": "jest --coverage"
+    "test": "npm run test-action && npm run test-web",
+    "test-action": "jest --coverage --config=test/jest.config.action.js",
+    "test-web": "NODE_OPTIONS=--experimental-vm-modules jest --coverage --env=jsdom --config=test/jest.config.web.js"
   },
   "repository": {
     "type": "git",
@@ -21,9 +23,8 @@
     "url": "https://github.com/purplecabbage/aio-exc-app/issues"
   },
   "homepage": "https://github.com/purplecabbage/aio-exc-app#readme",
-  "dependencies": {
-  },
   "devDependencies": {
-    "jest": "^28.1.3"
+    "jest": "^28.1.3",
+    "jest-environment-jsdom": "^29.6.2"
   }
 }
