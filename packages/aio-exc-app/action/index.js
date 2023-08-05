@@ -45,12 +45,16 @@ function stringParameters (params) {
    * @private
    */
   function getMissingKeys (obj, required) {
-    return required.filter(r => {
-      const splits = r.split('.')
+    const result = required.filter(key => {
+      const splits = key.split('.')
       const last = splits[splits.length - 1]
-      const traverse = splits.slice(0, -1).reduce((tObj, split) => { tObj = (tObj[split] || {}); return tObj }, obj)
+      const traverse = splits.slice(0, -1)
+        .reduce((tObj, split) => {
+          return tObj[split]
+        }, obj)
       return traverse[last] === undefined || traverse[last] === '' // missing default params are empty string
     })
+    return result
   }
   
   /**
