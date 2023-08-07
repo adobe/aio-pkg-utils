@@ -4,11 +4,11 @@ on:
   push:
     branches: [ master ]
     paths:
-      - 'packages/aio-app-builder-repos/'
+      - 'packages/aio-app-builder-repos/**'
   pull_request:
     branches: [ master ]
     paths:
-      - 'packages/aio-app-builder-repos/'
+      - 'packages/aio-app-builder-repos/**'
 
 jobs:
   build:
