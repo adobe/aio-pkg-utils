@@ -1,0 +1,36 @@
+name: Node.js CI for aio-app-builder-repos
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'packages/aio-app-builder-repos/'
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'packages/aio-app-builder-repos/'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x]
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: |
+        cd 'packages/aio-app-builder-repos/'
+        npm cit
+    - name: upload coverage
+      if: success()
+      uses: codecov/codecov-action@v3.1.1
+      with:
+        name: ${{ runner.os }} node.js ${{ matrix.node-version }}
