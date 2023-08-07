@@ -50,7 +50,7 @@ function stringParameters (params) {
       const last = splits[splits.length - 1]
       const traverse = splits.slice(0, -1)
         .reduce((tObj, split) => {
-          return tObj[split]
+          return tObj[split] || {}
         }, obj)
       return traverse[last] === undefined || traverse[last] === '' // missing default params are empty string
     })

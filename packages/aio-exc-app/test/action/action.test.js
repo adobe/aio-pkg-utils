@@ -133,6 +133,12 @@ describe('checkMissingRequestInputs', () => {
         expect(result).toBe('missing header(s) \'e\'')
     })
 
+    test('returns missing headers coverage', () => {
+        const obj = { a: {} }
+        const result = checkMissingRequestInputs(obj, ['a.b.c'], [])
+        expect(result).toBe('missing parameter(s) \'a.b.c\'')
+    })
+
 
 })
 
