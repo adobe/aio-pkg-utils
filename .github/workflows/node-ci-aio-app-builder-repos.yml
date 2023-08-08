@@ -28,6 +28,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: |
         cd 'packages/aio-app-builder-repos/'
+        npm i --package-lock --package-lock-only
         npm cit
     - name: upload coverage
       if: success()
