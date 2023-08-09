@@ -3,18 +3,17 @@
   "version": "0.1.0",
   "description": "Client helper functions for firefly apps running in experience.adobe.com unified shell",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage --env=jsdom"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/purplecabbage/aio-exc-app.git"
   },
   "keywords": [
-    "firefly",
     "serverless",
     "cloud-native",
     "adobe",
-    "runtime"
+    "adobe-runtime"
   ],
   "author": "",
   "license": "Apache-2.0",
@@ -22,7 +21,29 @@
     "url": "https://github.com/purplecabbage/aio-exc-app/issues"
   },
   "homepage": "https://github.com/purplecabbage/aio-exc-app#readme",
-  "dependencies": {
-    "@adobe/exc-app": "^0.2.25"
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "jest": "^28.1.3",
+    "jest-environment-jsdom": "^29.6.2"
+  },
+  "jest": {
+    "collectCoverageFrom": [
+      "web/index.mjs",
+      "web/**/*.mjs",
+      "action/index.js",
+      "action/**/*.js"
+    ],
+    "testRegex": [
+      "web.test[^/]*.mjs$",
+      "action.test[^/]*.js$"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "statements": 100,
+        "branches": 100,
+        "functions": 100,
+        "lines": 100
+      }
+    }
   }
 }
