@@ -10,9 +10,4 @@
  * governing permissions and limitations under the License.
  */
 
-import invokeAction from './invokeAction'
-
-// more to come!
-module.exports = {
-  actionWebInvoke: invokeAction
-}
+export { default as actionWebInvoke } from './invokeAction'

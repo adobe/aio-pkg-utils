@@ -25,12 +25,13 @@
  *
  */
 
- async function invokeAction (actionUrl, headers = {}, params = {}, options = { method: 'POST' }) {  
+async function invokeAction(actionUrl, headers = {}, params = {}, options = { method: 'POST' }) {
+  const fetchUrl = new URL(actionUrl)
+
   const actionHeaders = {
     'Content-Type': 'application/json',
     ...headers
   }
-
   if (window.location.hostname === 'localhost') {
     actionHeaders['x-ow-extra-logging'] = 'on'
   }
@@ -41,20 +42,19 @@
   }
 
   if (fetchConfig.method === 'GET') {
-    actionUrl = new URL(actionUrl)
-    Object.keys(params).forEach(key => actionUrl.searchParams.append(key, params[key]))
+    Object.keys(params).forEach(key => fetchUrl.searchParams.append(key, params[key]))
   } else if (fetchConfig.method === 'POST') {
     fetchConfig.body = JSON.stringify(params)
   } else {
     throw new Error(`unsuppored options.method: ${fetchConfig.method}`)
   }
-  
-  const response = await fetch(actionUrl, fetchConfig)
+
+  const response = await fetch(fetchUrl, fetchConfig)
 
   let content = await response.text()
-  
+
   if (!response.ok) {
-    throw new Error(`failed request to '${actionUrl}' with status: ${response.status} and message: ${content}`)
+    throw new Error(`failed request to '${fetchUrl}' with status: ${response.status} and message: ${content}`)
   }
   try {
     content = JSON.parse(content)
