@@ -1,21 +1,21 @@
 # aio-exc-app
 
+This helper library contains function you can use in your App Builder application.
 
-This helper library contains function you can use in your application.
-
-### web example
+### web example ( for browser / frontend code )
 
 ```js
-import invokeAction from '@adobe/aio-exc-app/web/invokeAction'
-
-const actionResponse = await invokeAction(actionUrl, headers, params)
-
+import { actionWebInvoke } from '@adobe/aio-exc-app/web'
+const actionResponse = await actionWebInvoke(actionUrl, headers, params)
 ```
 
-### action example
+### action example ( for use in your runtime actions / backend )
 
 ```js
-const { errorResponse, getBearerToken, stringParameters, checkMissingRequestInputs } = require('@adobe/aio-exc-app/action/utils')
+const { errorResponse,
+        getBearerToken,
+        stringParameters,
+        checkMissingRequestInputs } = require('@adobe/aio-exc-app/action')
 
 async function main (params) {
     logger.debug(stringParameters(params))
