@@ -17,7 +17,7 @@ jobs:
           node-version: 18
       - name: npm install, test, and publish
         run: |
-          cd 'packages/aio-aio-exc-app/'
+          cd 'packages/aio-exc-app/'
           npm it
       - uses: JS-DevTools/npm-publish@v1
         with:
