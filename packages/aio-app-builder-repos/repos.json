@@ -59,5 +59,8 @@
   { "repo": "adobe/aio-apps-action", "components": ["CLI"] },
   { "repo": "AdobeDocs/project-firefly", "components": ["DOCUMENTATION"], "jira_project": "AIOE" },
   { "repo": "adobe/inquirer-table-checkbox", "components": ["Utilities"] },
-  { "repo": "adobe/update-prerelease-npm-version", "components": ["Utilities"] }
+  { "repo": "adobe/update-prerelease-npm-version", "components": ["Utilities"] },
+  { "repo": "adobe/generator-add-events-generic", "components": ["SDK Libraries", "Utilities"] },
+  { "repo": "adobe/generator-app-events-generic", "components": ["SDK Libraries", "Utilities"] },
+  { "repo": "adobe/generator-add-publish-events", "components": ["SDK Libraries", "Utilities"] }
 ]
