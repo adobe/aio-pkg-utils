@@ -7,7 +7,7 @@ const fetch = require('node-fetch')
 
 function createMetric (metricName, labels) {
   metricsMetadata[metricName] = labels
-  console.log(metricsMetadata)
+  console.log('createMetric ', metricsMetadata)
 }
 
 function setMetricsURL (metricsPostURL) {
@@ -19,6 +19,7 @@ async function processBatchCounter() {
   if (metricsURL) {
     Object.keys(batchedMetrics).forEach(async (metricName) => {
       console.log('Sending Batch metrics for ', metricName, batchedMetrics[metricName])
+      // ex. Sending Batch metrics for  request_count { '14257-chimera-stage': 2 }
       const postBody = JSON.stringify({metric: metricName, data: batchedMetrics[metricName]})
       delete batchedMetrics[metricName]
       const reqData = {
@@ -28,15 +29,14 @@ async function processBatchCounter() {
         },
         body: postBody
       }
-      const response = await fetch(metricsURL, reqData)
+      await fetch(metricsURL, reqData)
     })
   } else {
-    console.log('metricsURL not set, batchedMetrics still present')
+    console.error('error: metricsURL not set, but batchedMetrics still present')
   }
 }
 
 async function incBatchCounter (metricName, namespace, label) {
-  console.log(metricName)
   // TODO: Error handling using Metrics metadata
   /* if (metricsMetadata[metricName].length < (arguments.length-1)) {
     console.log(`Could not update metric ${metricName} because supplied label count did not match the label definition ${JSON.stringify(metricsMetadata[metricName])}`)
@@ -47,7 +47,6 @@ async function incBatchCounter (metricName, namespace, label) {
   console.log(`batchedMetrics count: ${Object.keys(batchedMetrics).length}`) */
   if(!batchTimerSet || Object.keys(batchedMetrics) > 0) {
     batchTimerSet = true
-    console.log('started timer')
     setTimeout(processBatchCounter, 5000 ) // 5 seconds
   }
   batchedMetrics[metricName] = batchedMetrics[metricName] || {}
