@@ -52,7 +52,6 @@
   { "repo": "adobe/generator-add-action-asset-compute", "components": ["SDK Libraries", "Utilities"] },
   { "repo": "adobe/generator-add-web-assets-exc-react", "components": ["SDK Libraries", "Utilities"] },
   { "repo": "adobe/generator-add-web-assets-exc-raw-html", "components": ["SDK Libraries", "Utilities"] },
-  { "repo": "adobe/generator-aio-console", "components": ["SDK Libraries", "Utilities"] },
   { "repo": "adobe/aio-run-detached", "components": ["CLI"] },
   { "repo": "adobe/aio-e2e-tests", "components": ["CLI"] },
   { "repo": "adobe/aio-cli-setup-action", "components": ["CLI"] },
