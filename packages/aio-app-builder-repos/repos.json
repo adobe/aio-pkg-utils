@@ -62,5 +62,6 @@
   { "repo": "adobe/update-prerelease-npm-version", "components": ["Utilities"] },
   { "repo": "adobe/generator-add-events-generic", "components": ["SDK Libraries", "Utilities"] },
   { "repo": "adobe/generator-app-events-generic", "components": ["SDK Libraries", "Utilities"] },
-  { "repo": "adobe/generator-add-publish-events", "components": ["SDK Libraries", "Utilities"] }
+  { "repo": "adobe/generator-add-publish-events", "components": ["SDK Libraries", "Utilities"] },
+  { "repo": "adobe/aio-lib-test-proxy", "components": ["Utilities"] }
 ]
