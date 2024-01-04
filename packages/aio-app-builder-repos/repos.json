@@ -35,6 +35,7 @@
   { "repo": "adobe/aio-lib-console", "components": ["SDK Libraries"] },
   { "repo": "adobe/aio-lib-template", "components": ["Utilities"] },
   { "repo": "adobe/aio-lib-web", "components": ["SDK Libraries", "Utilities"] },
+  { "repo": "adobe/aio-lib-env", "components": ["SDK Libraries", "Utilities"] },
   { "repo": "adobe/aio-sdk-core", "components": ["SDK Libraries"] },
   { "repo": "adobe/aio-sdk", "components": ["SDK Libraries"] },
   { "repo": "adobe/eslint-config-aio-lib-config", "components": ["Utilities"] },
