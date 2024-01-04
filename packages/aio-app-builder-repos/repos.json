@@ -11,6 +11,7 @@
   { "repo": "adobe/aio-cli-plugin-info", "components": ["CLI"] },
   { "repo": "adobe/aio-cli-plugin-doc", "components": ["CLI"] },
   { "repo": "adobe/aio-cli-plugin-events", "components": ["CLI"] },
+  { "repo": "aio-cli-plugin-app-templates", "components": ["CLI"] },
   { "repo": "adobe/aio-cli-lib-console", "components": ["SDK Libraries"] },
   { "repo": "adobe/aio-cli-lib-app-config", "components": ["SDK Libraries"] },
   { "repo": "adobe/aio-lib-core-logging", "components": ["SDK Libraries"] },
