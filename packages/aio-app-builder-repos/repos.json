@@ -70,5 +70,6 @@
   { "repo": "adobe/aio-lib-test-proxy", "workflow": ["aio-cli"], "components": ["Utilities"] },
   { "repo": "adobe/aio-lib-console-project-installation", "workflow": ["aio-cli"], "components": ["SDK Libraries"] },
   { "repo": "adobe/aio-lib-templates", "workflow": ["aio-cli"], "components": ["SDK Libraries"] },
-  { "repo": "adobe/aio-template-submission", "workflow": ["aio-cli"], "components": ["Utilities"] }
+  { "repo": "adobe/aio-template-submission", "workflow": ["aio-cli"], "components": ["Utilities"] },
+  { "repo": "adobe/aio-lib-template-validation", "workflow": ["aio-cli"], "components": ["SDK Libraries"] }
 ]
