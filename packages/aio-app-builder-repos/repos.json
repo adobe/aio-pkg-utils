@@ -1,6 +1,6 @@
 [
   { "repo": "adobe/aio-cli", "workflow": ["aio-cli"], "components": ["CLI"] },
-  { "repo": "adobe/aio-cli-plugin-runtime", "workflow": ["aio-cli"],"components": ["CLI"] },
+  { "repo": "adobe/aio-cli-plugin-runtime", "workflow": ["aio-cli"], "components": ["CLI"] },
   { "repo": "adobe/aio-cli-plugin-config", "workflow": ["aio-cli"],"components": ["CLI"] },
   { "repo": "adobe/aio-cli-plugin-jwt-auth", "archived": true, "components": ["CLI"] },
   { "repo": "adobe/aio-cli-plugin-app", "workflow": ["aio-cli"],"components": ["CLI"] },
@@ -70,6 +70,6 @@
   { "repo": "adobe/aio-lib-test-proxy", "workflow": ["aio-cli"], "components": ["Utilities"] },
   { "repo": "adobe/aio-lib-console-project-installation", "workflow": ["aio-cli"], "components": ["SDK Libraries"] },
   { "repo": "adobe/aio-lib-templates", "workflow": ["aio-cli"], "components": ["SDK Libraries"] },
-  { "repo": "adobe/aio-template-submission", "workflow": ["aio-cli"], "components": ["Utilities"] },
+  { "repo": "adobe/aio-template-submission", "components": ["Utilities"] },
   { "repo": "adobe/aio-lib-template-validation", "workflow": ["aio-cli"], "components": ["SDK Libraries"] }
 ]
