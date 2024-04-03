@@ -4,6 +4,7 @@
   { "repo": "adobe/aio-cli-plugin-config", "workflow": ["aio-cli"],"components": ["CLI"] },
   { "repo": "adobe/aio-cli-plugin-jwt-auth", "archived": true, "components": ["CLI"] },
   { "repo": "adobe/aio-cli-plugin-app", "workflow": ["aio-cli"],"components": ["CLI"] },
+  { "repo": "adobe/aio-cli-plugin-app-dev", "workflow": ["aio-cli"],"components": ["CLI"] },
   { "repo": "adobe/aio-cli-plugin-console", "workflow": ["aio-cli"],"components": ["CLI"] },
   { "repo": "adobe/aio-cli-plugin-target", "archived": true, "components": ["CLI"] },
   { "repo": "adobe/aio-cli-plugin-auth", "workflow": ["aio-cli"],"components": ["CLI"] },
