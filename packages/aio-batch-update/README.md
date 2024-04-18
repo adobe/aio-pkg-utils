@@ -28,7 +28,7 @@ Make batch changes across multiple repos using a Git patch
 
 - Copy `update-config.example.json` to `update-config.json` 
 - Fill out new config file
-    - `branch` - name of brach to create
+    - `branch` - name of branch to create
     - `commitMessage` - message to include in the commit
     - `repos` (optional) - list of github repos to apply patch to (if empty uses all active and non-documentation aio-app-builder-repo)
     - `patch` - name of the Git patch in `patches` folder to apply
