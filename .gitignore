@@ -33,4 +33,5 @@ coverage
 # yeoman
 .yo-repository
 
-
+repos.txt
+update-config.json
