@@ -86,7 +86,7 @@ const main = async () => {
         '--no-skip-ci',
         '--seconds-between-prs',
         '30',
-        '--seconds-to-wait-when-ratelimited',
+        '--seconds-to-wait-when-rate-limited',
         '60',
         'git',
         'apply',
