@@ -83,9 +83,14 @@ const main = async () => {
         `${config.branch}`,
         '--commit-message',
         `${config.commitMessage}`,
+        '--no-skip-ci',
+        '--seconds-between-prs',
+        '30',
+        '--seconds-to-wait-when-ratelimited',
+        '60',
         'git',
         'apply',
-        `${__dirname}/patches/${config.patch}`
+        `${__dirname}/patches/${config.patch}`,
     ], {
         stdio: 'inherit'
     })
