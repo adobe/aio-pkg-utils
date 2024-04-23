@@ -1,0 +1,26 @@
+{
+  "name": "update-repos",
+  "version": "0.0.1",
+  "description": "Push an update and create a pull request for multiple App Builder repos",
+  "main": "index.js",
+  "scripts": {
+    "apply": "node index.js"
+  },
+  "keywords": [
+    "aio",
+    "adobe",
+    "App",
+    "Builder",
+    "adp"
+  ],
+  "author": "Adobe Inc.",
+  "license": "Apache-2.0",
+  "repository": {
+    "url": "https://github.com/adobe/aio-pkg-utils/tree/master/packages/update-repos"
+  },
+  "dependencies": {
+    "execa": "^5.1.1",
+    "inquirer": "^8",
+    "ora": "^5"
+  }
+}
