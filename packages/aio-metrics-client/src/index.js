@@ -54,7 +54,7 @@ async function processBatchCounter() {
       return fetch(metricsURL, reqData)
     }))
 
-    await Promise.all(processPromises)
+    await Promise.allSettled(processPromises)
   } else {
     console.error('error: metricsURL not set, but batchedMetrics still present')
   }
