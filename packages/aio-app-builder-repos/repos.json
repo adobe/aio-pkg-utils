@@ -15,6 +15,7 @@
   { "repo": "adobe/aio-cli-plugin-certificate", "workflow": ["aio-cli"], "components": ["CLI"] },
   { "repo": "adobe/aio-cli-plugin-telemetry", "workflow": ["aio-cli"], "components": ["CLI"] },
   { "repo": "adobe/aio-cli-plugin-app-templates", "workflow": ["aio-cli"], "components": ["CLI"] },
+  { "repo": "adobe/aio-cli-plugin-app-storage", "workflow": ["aio-cli"], "components": ["CLI"] },
   { "repo": "adobe/aio-cli-lib-console", "workflow": ["aio-cli"], "components": ["SDK Libraries"] },
   { "repo": "adobe/aio-cli-lib-app-config", "workflow": ["aio-cli"], "components": ["SDK Libraries"] },
   { "repo": "adobe/aio-lib-core-logging", "workflow": ["aio-cli"], "components": ["SDK Libraries"] },
