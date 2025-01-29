@@ -4,7 +4,12 @@
   "description": "Push an update and create a pull request for multiple App Builder repos",
   "main": "index.js",
   "scripts": {
-    "apply": "node index.js"
+    "apply": "node index.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "keywords": [
     "aio",
@@ -22,5 +27,17 @@
     "execa": "^5.1.1",
     "inquirer": "^8",
     "ora": "^5"
+  },
+  "devDependencies": {
+    "@adobe/eslint-config-aio-lib-config": "^4.0.0",
+    "eslint": "^8.57.1",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-jest": "^27.9.0",
+    "eslint-plugin-jsdoc": "^48.11.0",
+    "eslint-plugin-n": "^15.7.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^6.6.0",
+    "jest": "^29.7.0"
   }
 }
