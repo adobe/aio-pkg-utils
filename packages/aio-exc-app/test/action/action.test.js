@@ -9,7 +9,6 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-
 const {
   errorResponse,
   getBearerToken,
@@ -33,7 +32,6 @@ describe('api', () => {
   })
 })
 
-
 describe('errorResponse', () => {
   test('formats status code + message', () => {
     const error = new Error('test')
@@ -44,7 +42,7 @@ describe('errorResponse', () => {
   test('calls logger if passed', () => {
     const info = jest.fn()
     const error = new Error('test')
-    const result = errorResponse(500, error.message, { info })
+    errorResponse(500, error.message, { info })
     expect(info).toHaveBeenCalledWith('500: test')
   })
 })
@@ -52,7 +50,8 @@ describe('errorResponse', () => {
 describe('stringParameters', () => {
   test('returns stringified parameters', () => {
     const params = {
-      a: 1, b: 2,
+      a: 1,
+      b: 2,
       __ow_headers: {
         header1: 'header1',
         header2: 'header2'
@@ -63,7 +62,8 @@ describe('stringParameters', () => {
   })
   test('hides authorization header', () => {
     const params = {
-      a: 1, b: 2,
+      a: 1,
+      b: 2,
       __ow_headers: {
         header1: 'header1',
         authorization: 'Bearer some-secret-token'
@@ -84,7 +84,8 @@ describe('stringParameters', () => {
 describe('getBearerToken', () => {
   test('returns bearer token', () => {
     const params = {
-      a: 1, b: 2,
+      a: 1,
+      b: 2,
       __ow_headers: {
         header1: 'header1',
         authorization: 'Bearer some-secret-token'
@@ -95,7 +96,8 @@ describe('getBearerToken', () => {
   })
   test('returns undefined if no authorization header', () => {
     const params = {
-      a: 1, b: 2,
+      a: 1,
+      b: 2,
       __ow_headers: {
         header1: 'header1'
       }
@@ -106,7 +108,6 @@ describe('getBearerToken', () => {
 })
 
 describe('checkMissingRequestInputs', () => {
-
   test('returns null if you call it without anything to check against ?!', () => {
     const obj = { a: 1, b: 2, c: 3 }
     const result = checkMissingRequestInputs(obj)
@@ -125,12 +126,12 @@ describe('checkMissingRequestInputs', () => {
     const result = checkMissingRequestInputs(obj, ['a', 'b', 'c', 'd'])
     expect(result).toBe('missing parameter(s) \'d\'')
   })
-  test('and we have to include an and case ... ', () => {
+  test('and we have to include an and case ...', () => {
     const obj = { a: 1, b: 2, c: 3 }
     const result = checkMissingRequestInputs(obj, ['a', 'b', 'c', 'd'], ['e'])
     expect(result).toBe('missing header(s) \'e\' and missing parameter(s) \'d\'')
   })
-  test('returns missing inputs', () => {
+  test('returns missing inputs with different payload', () => {
     const obj = { a: 1, b: 2, c: 3, e: { f: 4 } }
     const result = checkMissingRequestInputs(obj, ['e.f', 'e.g'])
     expect(result).toBe('missing parameter(s) \'e.g\'')
@@ -146,7 +147,4 @@ describe('checkMissingRequestInputs', () => {
     const result = checkMissingRequestInputs(obj, ['a.b.c'], [])
     expect(result).toBe('missing parameter(s) \'a.b.c\'')
   })
-
-
 })
-

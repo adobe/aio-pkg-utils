@@ -66,7 +66,6 @@ async function processBatchCounter () {
       return fetch(metricsURL, reqData)
     }))
 
-    // eslint-disable-next-line node/no-unsupported-features/es-builtins
     await Promise.allSettled(processPromises)
   } else {
     console.error('error: metricsURL not set, but batchedMetrics still present')
@@ -137,7 +136,6 @@ async function incBatchCounterMultiLabel (metricName, namespace, labels) {
     metric: metricName,
     namespace,
     value: 1,
-    // eslint-disable-next-line node/no-unsupported-features/es-syntax
     ...labels
   })
 }

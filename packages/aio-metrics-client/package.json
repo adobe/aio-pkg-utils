@@ -12,6 +12,9 @@
   "dependencies": {
     "node-fetch": "^2.6.0"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "devDependencies": {
     "@adobe/eslint-config-aio-lib-config": "^4.0.0",
     "eslint": "^8.57.1",
