@@ -1,24 +1,35 @@
-let batchedMetricsBulk = {}
-let batchedMetrics = []
-let metricsMetadata = {}
+const batchedMetricsBulk = {}
+const batchedMetrics = []
+const metricsMetadata = {}
 let batchTimerSet = false
 let metricsURL = ''
 
 const fetch = require('node-fetch')
 
-function createMetric(metricName, labels) {
+/**
+ * Creates a metric with the specified name and labels.
+ *
+ * @param {string} metricName - The name of the metric to create.
+ * @param {object} labels - An object containing label key-value pairs for the metric.
+ */
+function createMetric (metricName, labels) {
   metricsMetadata[metricName] = labels
   console.log('createMetric ', metricsMetadata)
 }
 
-function setMetricsURL(metricsPostURL) {
+/**
+ * Sets the URL to which metrics will be posted.
+ *
+ * @param {string} metricsPostURL - The URL to set for posting metrics.
+ */
+function setMetricsURL (metricsPostURL) {
   metricsURL = metricsPostURL
 }
 
 /**
  * Process batched metrics
  */
-async function processBatchCounter() {
+async function processBatchCounter () {
   batchTimerSet = false
   if (metricsURL) {
     let processPromises = []
@@ -63,15 +74,12 @@ async function processBatchCounter() {
 
 /**
  * Increment a counter metric
- * 
  * Note: If you only have one label for your metric, use this function. It will batch the counter increments and send them in bulk.
- * 
  * @param {string} metricName Name of the metric
  * @param {string} namespace Namespace
- * @param {string} Label
+ * @param {string} label Label string (ex. 'GET /templates')
  */
-async function incBatchCounter(metricName, namespace, label) {
-
+async function incBatchCounter (metricName, namespace, label) {
   if (typeof label !== 'string') {
     console.error('incBatchCounter error: label must be a string')
     return
@@ -98,8 +106,7 @@ async function incBatchCounter(metricName, namespace, label) {
     batchedMetricsBulk[metricName][namespace] = batchedMetricsBulk[metricName][namespace] || {}
     batchedMetricsBulk[metricName][namespace][label] = batchedMetricsBulk[metricName][namespace][label] || 0
     batchedMetricsBulk[metricName][namespace][label] = batchedMetricsBulk[metricName][namespace][label] + 1
-  }
-  else {
+  } else {
     batchedMetricsBulk[metricName][namespace] = batchedMetricsBulk[metricName][namespace] || 0
     batchedMetricsBulk[metricName][namespace] = batchedMetricsBulk[metricName][namespace] + 1
   }
@@ -107,15 +114,14 @@ async function incBatchCounter(metricName, namespace, label) {
 
 /**
  * Increment a counter metric with multiple labels
- * 
+ *
  * Note: This function will send metrics in individual network requests, not in bulk.
- * 
+ *
  * @param {string} metricName Name of the metric
- * @param {string} requester Name of requester
+ * @param {string} namespace Name of the namespace
  * @param {object} labels Labels, ex. { api: 'GET /templates', errorCategory: '500' }
  */
-async function incBatchCounterMultiLabel(metricName, namespace, labels) {
-
+async function incBatchCounterMultiLabel (metricName, namespace, labels) {
   if (!batchTimerSet || batchedMetrics.length > 0) {
     batchTimerSet = true
     setTimeout(processBatchCounter, 5000) // 5 seconds
@@ -133,7 +139,6 @@ async function incBatchCounterMultiLabel(metricName, namespace, labels) {
     ...labels
   })
 }
-
 
 module.exports = {
   createMetric,
