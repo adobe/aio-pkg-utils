@@ -80,7 +80,7 @@ describe('incBatchCounter', () => {
 
     test('should process metrics if no labels', () => {
         lib.setMetricsURL('http://localhost:3000')
-        lib.incBatchCounter('metricName', 'namespace', '')
+        lib.incBatchCounter('metricName', 'namespace')
         jest.advanceTimersByTime(5000)
 
         expect(fetch).toHaveBeenCalledTimes(1)
