@@ -80,7 +80,7 @@ async function processBatchCounter () {
  * @param {string} label Label string (ex. 'GET /templates')
  */
 async function incBatchCounter (metricName, namespace, label) {
-  if (typeof label !== 'string') {
+  if (label && typeof label !== 'string') {
     console.error('incBatchCounter error: label must be a string')
     return
   }
