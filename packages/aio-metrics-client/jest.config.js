@@ -17,18 +17,18 @@ module.exports = {
     collectCoverage: true,
     setupFilesAfterEnv: ['./test/jest.setup.js'],
     collectCoverageFrom: [
-      'src/*.js'
+        'src/*.js'
     ],
     coverageThreshold: {
-      global: {
-        branches: 100,
-        lines: 100,
-        statements: 100,
-        functions: 100
-      }
+        global: {
+            branches: 100,
+            lines: 100,
+            statements: 100,
+            functions: 100
+        }
     },
     reporters: [
-      'default',
-      ['jest-junit', { outputDirectory: 'reports/jest', outputName: 'junit.xml' }]
+        'default',
+        ['jest-junit', { outputDirectory: 'reports/jest', outputName: 'junit.xml' }]
     ]
-  }
+}

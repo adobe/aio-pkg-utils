@@ -14,8 +14,8 @@ const { stdout, stderr } = require('stdout-stderr')
 jest.useFakeTimers();
 
 beforeEach(() => {
-//   stdout.start()
-//   stderr.start()
-  // change this if you need to see logs from stdout
-  stdout.print = false
+      stdout.start()
+      stderr.start()
+    // change this if you need to see logs from stdout
+    stdout.print = false
 })
