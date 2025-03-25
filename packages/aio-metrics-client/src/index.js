@@ -77,10 +77,10 @@ async function processBatchCounter () {
  * Note: If you only have one label for your metric, use this function. It will batch the counter increments and send them in bulk.
  * @param {string} metricName Name of the metric
  * @param {string} namespace Namespace
- * @param {string} label Label string (ex. 'GET /templates')
+ * @param {string} label (optional) Label string (ex. 'GET /templates')
  */
-async function incBatchCounter (metricName, namespace, label) {
-  if (label && typeof label !== 'string') {
+async function incBatchCounter (metricName, namespace, label = '') {
+  if (typeof label !== 'string') {
     console.error('incBatchCounter error: label must be a string')
     return
   }
