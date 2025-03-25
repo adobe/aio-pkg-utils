@@ -122,7 +122,7 @@ async function incBatchCounter (metricName, namespace, label) {
  * @param {object} labels Labels, ex. { api: 'GET /templates', errorCategory: '500' }
  */
 async function incBatchCounterMultiLabel (metricName, namespace, labels) {
-  if (!batchTimerSet || batchedMetrics.length > 0) {
+  if (!batchTimerSet) {
     batchTimerSet = true
     setTimeout(processBatchCounter, 5000) // 5 seconds
   }
