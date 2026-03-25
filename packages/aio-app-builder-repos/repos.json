@@ -23,6 +23,7 @@
   { "repo": "adobe/aio-lib-core-errors", "workflow": ["aio-cli"], "components": ["SDK Libraries"] },
   { "repo": "adobe/aio-lib-core-tvm", "workflow": ["aio-cli"], "components": ["SDK Libraries", "TVM"] },
   { "repo": "adobe/aio-lib-core-networking", "workflow": ["aio-cli"], "components": ["SDK Libraries"] },
+  { "repo": "adobe/aio-lib-core-auth", "workflow": ["aio-cli"], "components": ["SDK Libraries"] },
   { "repo": "adobe/aio-lib-target", "workflow": ["aio-cli"], "components": ["SDK Libraries"] },
   { "repo": "adobe/aio-lib-analytics", "workflow": ["aio-cli"], "components": ["SDK Libraries"] },
   { "repo": "adobe/aio-lib-campaign-standard", "workflow": ["aio-cli"], "components": ["SDK Libraries"] },
