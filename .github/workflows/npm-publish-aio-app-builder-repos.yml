@@ -18,7 +18,6 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
       - name: npm install, test, and publish
         run: |
