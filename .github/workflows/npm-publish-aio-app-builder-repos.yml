@@ -14,10 +14,12 @@ jobs:
       id-token: write  # Required for OIDC
       contents: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
       - name: npm install, test, and publish
         run: |
           cd 'packages/aio-app-builder-repos/'
@@ -27,4 +29,6 @@ jobs:
         with:
           package: packages/aio-app-builder-repos/package.json
           token: ${{ secrets.ADOBE_BOT_NPM_TOKEN }}
+          strategy: all
+          provenance: true
           access: 'public'
