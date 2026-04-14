@@ -11,15 +11,15 @@ jobs:
     if: github.repository_owner == 'adobe'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
       - name: npm install, test, and publish
         run: |
           cd 'packages/aio-metrics-client/'
           npm it
-      - uses: JS-DevTools/npm-publish@v1
+      - uses: JS-DevTools/npm-publish@v4
         with:
           package: packages/aio-metrics-client/package.json
           token: ${{ secrets.ADOBE_BOT_NPM_TOKEN }}
