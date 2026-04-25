@@ -1,4 +1,4 @@
-import { writeFileSync } from 'node:fs'
+import { writeFileSync, existsSync } from 'node:fs'
 import { Command } from 'commander'
 import { execa } from 'execa'
 
@@ -125,6 +125,14 @@ export function createCli () {
         const output = formatEnvVars(envVars)
 
         if (options.output) {
+          if (existsSync(options.output)) {
+            const { confirm } = await import('@inquirer/prompts')
+            const overwrite = await confirm({
+              message: `'${options.output}' already exists. Overwrite?`,
+              default: false
+            })
+            if (!overwrite) return
+          }
           writeFileSync(options.output, output)
           console.error(`Environment variables written to ${options.output}`)
           console.error('')

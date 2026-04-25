@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { validateConfig, buildEnvVars, formatEnvVars, fetchAioConfig, checkAioCli, checkGhCli, createGhEnvironment, uploadSecrets, createCli } from '../src/index.js'
 
 vi.mock('execa')
-vi.mock('node:fs')
+vi.mock('node:fs', () => ({ writeFileSync: vi.fn(), existsSync: vi.fn(() => false) }))
 vi.mock('@inquirer/prompts', () => ({ confirm: vi.fn() }))
 
 const stageConfig = {
@@ -270,6 +270,8 @@ describe('createCli', () => {
       exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => { throw new Error('process.exit') })
       const { execa } = await import('execa')
       execa.mockResolvedValue({ stdout: JSON.stringify(stageConfig) })
+      const { existsSync } = await import('node:fs')
+      existsSync.mockReturnValue(false)
     })
 
     afterEach(() => {
@@ -290,6 +292,29 @@ describe('createCli', () => {
       const cli = createCli()
       await cli.parseAsync(['node', 'cli', 'create-env'])
       expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('CLIENTID_STAGE=client-id-123'))
+    })
+
+    it('prompts for confirmation if output file already exists', async () => {
+      const { existsSync } = await import('node:fs')
+      existsSync.mockReturnValue(true)
+      const { confirm } = await import('@inquirer/prompts')
+      confirm.mockResolvedValue(false)
+      const { writeFileSync } = await import('node:fs')
+      const cli = createCli()
+      await cli.parseAsync(['node', 'cli', 'create-env', '--output', 'secrets.env'])
+      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringContaining('already exists') }))
+      expect(writeFileSync).not.toHaveBeenCalled()
+    })
+
+    it('overwrites file when user confirms', async () => {
+      const { existsSync } = await import('node:fs')
+      existsSync.mockReturnValue(true)
+      const { confirm } = await import('@inquirer/prompts')
+      confirm.mockResolvedValue(true)
+      const { writeFileSync } = await import('node:fs')
+      const cli = createCli()
+      await cli.parseAsync(['node', 'cli', 'create-env', '--output', 'secrets.env'])
+      expect(writeFileSync).toHaveBeenCalledWith('secrets.env', expect.any(String))
     })
 
     it('prints gh secret set hint with file when --output is given', async () => {
