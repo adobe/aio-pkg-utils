@@ -18,49 +18,63 @@ Inspired by and improves on the approach described in [CI/CD using GitHub Action
 npm install -g @adobe/ab-app-secrets-uploader
 ```
 
-## Usage
+## Commands
+
+### `create-env <output-file>`
+
+Fetches secrets from `aio config` and writes them to a file, then prints the `gh` commands needed to upload them. No secrets are uploaded automatically — you run the printed commands yourself.
 
 ```
-ab-app-secrets-uploader upload [output-file] [options]
+ab-app-secrets-uploader create-env <output-file> [options]
 ```
-
-### Options
 
 | Flag | Description |
 |------|-------------|
-| `--no-suffix` | Omit the `_PROD` / `_STAGE` suffix from variable names (use when targeting a GitHub environment) |
-| `-V, --version` | Print version |
-| `-h, --help` | Show help |
+| `--no-suffix` | Omit the `_PROD` / `_STAGE` suffix (use when targeting a GitHub environment) |
 
-### Examples
-
-**Print env vars to stdout (suffix mode)**
+**Examples**
 
 ```sh
-ab-app-secrets-uploader upload
-```
-
-Outputs variables like `CLIENTID_STAGE`, `CLIENTSECRET_STAGE`, … and prints a `gh secret set` hint.
-
-**Write to a file**
-
-```sh
-ab-app-secrets-uploader upload secrets.env
+# Suffix mode — repo-level secrets
+ab-app-secrets-uploader create-env secrets.env
 gh secret set -f secrets.env
+
+# GitHub Environments mode
+ab-app-secrets-uploader create-env secrets.env --no-suffix
+gh api -X PUT repos/{owner}/{repo}/environments/stage
+gh secret set -f secrets.env --env stage
 ```
 
-**GitHub Environments mode (`--no-suffix`)**
+If `<output-file>` already exists, you will be prompted to confirm before overwriting.
 
-Use this when you want secrets scoped to a specific GitHub environment instead of the whole repository. Variable names are bare (`CLIENTID`, `CLIENTSECRET`, …).
+### `upload`
+
+Fetches secrets from `aio config` and uploads them directly as GitHub secrets after interactive confirmation. No file is written.
+
+```
+ab-app-secrets-uploader upload [options]
+```
+
+| Flag | Description |
+|------|-------------|
+| `--no-suffix` | Omit the `_PROD` / `_STAGE` suffix (use when targeting a GitHub environment) |
+
+**Examples**
 
 ```sh
-ab-app-secrets-uploader upload secrets.env --no-suffix
-# → writes secrets.env
-# → prints: gh secret set -f secrets.env --env stage
+# Suffix mode — repo-level secrets
+ab-app-secrets-uploader upload
+# → prompts: Upload secrets to this GitHub repo? (y/N)
+
+# GitHub Environments mode
+ab-app-secrets-uploader upload --no-suffix
 # → prompts: Create 'stage' environment in this GitHub repo? (y/N)
+# → prompts: Upload secrets to the 'stage' environment in this GitHub repo? (y/N)
 ```
 
-The environment name is determined automatically:
+## The `--no-suffix` flag
+
+By default, variable names include a suffix so both workspaces can coexist in the same repository as repo-level secrets (`CLIENTID_STAGE`, `CLIENTID_PROD`, …). Use `--no-suffix` when you want secrets scoped to a GitHub **environment** instead — names are bare (`CLIENTID`, `CLIENTSECRET`, …) and the environment name is derived automatically:
 
 | Workspace name | GitHub environment |
 |----------------|--------------------|
