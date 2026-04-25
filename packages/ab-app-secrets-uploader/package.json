@@ -36,7 +36,8 @@
   },
   "homepage": "https://github.com/adobe/aio-pkg-utils/tree/master/packages/ab-app-secrets-uploader#readme",
   "dependencies": {
-    "commander": "^12.0.0"
+    "commander": "^12.0.0",
+    "execa": "^9.0.0"
   },
   "devDependencies": {
     "@adobe/eslint-config-aio-lib-config": "^5.0.0",
