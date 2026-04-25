@@ -95,6 +95,13 @@ describe('buildEnvVars', () => {
     expect(vars.SCOPES_STAGE).toBe('openid,AdobeID')
   })
 
+  it('omits suffix when noSuffix is true', () => {
+    const vars = buildEnvVars(stageConfig, { noSuffix: true })
+    expect(vars).toHaveProperty('CLIENTID', 'client-id-123')
+    expect(vars).toHaveProperty('AIO_PROJECT_WORKSPACE_NAME', 'Stage')
+    expect(Object.keys(vars).every(k => !k.endsWith('_STAGE') && !k.endsWith('_PROD'))).toBe(true)
+  })
+
   it('uses the first client secret', () => {
     const cfg = {
       ...stageConfig,
@@ -216,6 +223,13 @@ describe('createCli', () => {
       await cli.parseAsync(['node', 'cli', 'upload', 'secrets.env'])
       expect(writeFileSync).toHaveBeenCalledWith('secrets.env', expect.stringContaining('CLIENTID_STAGE'))
       expect(consoleErrSpy).toHaveBeenCalledWith('Environment variables written to secrets.env')
+    })
+
+    it('omits suffix when --no-suffix flag is passed', async () => {
+      const cli = createCli()
+      await cli.parseAsync(['node', 'cli', 'upload', '--no-suffix'])
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('CLIENTID=client-id-123'))
+      expect(consoleSpy).not.toHaveBeenCalledWith(expect.stringContaining('CLIENTID_STAGE'))
     })
 
     it('prints error and exits on failure', async () => {

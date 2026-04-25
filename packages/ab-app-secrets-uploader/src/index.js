@@ -45,13 +45,13 @@ export function validateConfig (config) {
   }
 }
 
-export function buildEnvVars (config) {
+export function buildEnvVars (config, { noSuffix = false } = {}) {
   const ctx = config.project.workspace.details.credentials
     .find(c => c.integration_type === 'oauth_server_to_server')
     ?.name.toLowerCase()
 
   const imsCtx = config.ims.contexts[ctx]
-  const suffix = config.project.workspace.name === 'Production' ? '_PROD' : '_STAGE'
+  const suffix = noSuffix ? '' : (config.project.workspace.name === 'Production' ? '_PROD' : '_STAGE')
 
   return {
     [`CLIENTID${suffix}`]: imsCtx.client_id,
@@ -86,13 +86,14 @@ export function createCli () {
   program
     .command('upload [output-file]')
     .description('Fetch secrets from aio config and output as GitHub-ready env vars')
-    .action(async (outputFile) => {
+    .option('--no-suffix', 'omit the _PROD/_STAGE suffix from env var names')
+    .action(async (outputFile, options) => {
       try {
         await checkAioCli()
         await checkGhCli()
         const config = await fetchAioConfig()
         validateConfig(config)
-        const envVars = buildEnvVars(config)
+        const envVars = buildEnvVars(config, { noSuffix: !options.suffix })
         const output = formatEnvVars(envVars)
 
         if (outputFile) {
