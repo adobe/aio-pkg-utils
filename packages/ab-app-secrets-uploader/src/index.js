@@ -75,8 +75,14 @@ export function formatEnvVars (envVars) {
   return Object.entries(envVars).map(([k, v]) => `${k}=${v}`).join('\n')
 }
 
+export async function getGhRepo () {
+  const { stdout } = await execa('gh', ['repo', 'view', '--json', 'nameWithOwner', '-q', '.nameWithOwner'])
+  return stdout.trim()
+}
+
 export async function createGhEnvironment (envName) {
-  await execa('gh', ['api', '-X', 'PUT', `repos/{owner}/{repo}/environments/${envName}`])
+  const repo = await getGhRepo()
+  await execa('gh', ['api', '-X', 'PUT', `repos/${repo}/environments/${envName}`])
 }
 
 export function createCli () {
