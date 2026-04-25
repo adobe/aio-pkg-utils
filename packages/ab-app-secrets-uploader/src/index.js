@@ -76,7 +76,18 @@ export function formatEnvVars (envVars) {
 }
 
 export async function createGhEnvironment (envName) {
-  await execa('gh', ['api', '-X', 'PUT', `repos/{owner}/{repo}/environments/${envName}`])
+  try {
+    await execa('gh', ['api', '-X', 'PUT', `repos/{owner}/{repo}/environments/${envName}`])
+  } catch (err) {
+    if (err.stderr?.includes('404') || err.message?.includes('404')) {
+      throw new Error(
+        `Failed to create environment '${envName}' (HTTP 404).\n\n` +
+        'You may be authenticated as the wrong GitHub user. Try:\n' +
+        '  gh auth switch'
+      )
+    }
+    throw err
+  }
 }
 
 export function createCli () {

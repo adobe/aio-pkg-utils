@@ -228,6 +228,28 @@ describe('createGhEnvironment', () => {
     await createGhEnvironment('stage')
     expect(execa).toHaveBeenCalledWith('gh', ['api', '-X', 'PUT', 'repos/{owner}/{repo}/environments/stage'])
   })
+
+  it('throws a gh auth switch hint on 404 (via stderr)', async () => {
+    const { execa } = await import('execa')
+    const err = new Error('Command failed')
+    err.stderr = 'gh: Not Found (HTTP 404)'
+    execa.mockRejectedValue(err)
+    await expect(createGhEnvironment('production')).rejects.toThrow("Failed to create environment 'production' (HTTP 404).")
+    await expect(createGhEnvironment('production')).rejects.toThrow('gh auth switch')
+  })
+
+  it('throws a gh auth switch hint on 404 (via message)', async () => {
+    const { execa } = await import('execa')
+    const err = new Error('Command failed with exit code 1: gh api ... 404')
+    execa.mockRejectedValue(err)
+    await expect(createGhEnvironment('stage')).rejects.toThrow('gh auth switch')
+  })
+
+  it('re-throws non-404 errors as-is', async () => {
+    const { execa } = await import('execa')
+    execa.mockRejectedValue(new Error('network timeout'))
+    await expect(createGhEnvironment('stage')).rejects.toThrow('network timeout')
+  })
 })
 
 describe('createCli', () => {
