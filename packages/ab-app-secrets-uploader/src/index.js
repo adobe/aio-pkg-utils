@@ -105,9 +105,9 @@ export function createCli () {
     .version('0.1.0')
 
   program
-    .command('upload')
-    .description('Fetch secrets from aio config and upload as GitHub secrets')
-    .option('--output <file>', 'write env vars to a file instead of uploading directly')
+    .command('create-env')
+    .description('Fetch secrets from aio config and write to a file with upload instructions')
+    .option('--output <file>', 'file to write env vars to')
     .option('--no-suffix', 'omit the _PROD/_STAGE suffix from env var names')
     .action(async (options) => {
       try {
@@ -134,35 +134,69 @@ export function createCli () {
           } else {
             console.error(`  gh secret set -f ${options.output}`)
           }
-          if (noSuffix) {
-            console.error('')
-            console.error(`To create the '${envName}' GitHub environment, run:`)
-            console.error(`  gh api -X PUT repos/{owner}/{repo}/environments/${envName}`)
-          }
         } else {
-          const { confirm } = await import('@inquirer/prompts')
-
+          console.log(output)
+          console.error('')
+          console.error('To upload these secrets to a GitHub repository, run:')
           if (noSuffix) {
-            const shouldCreate = await confirm({
-              message: `Create '${envName}' environment in this GitHub repo?`,
-              default: false
-            })
-            if (shouldCreate) {
-              await createGhEnvironment(envName)
-              console.error(`Environment '${envName}' created (or already existed).`)
-            }
+            console.error(`  gh secret set -f YOUR_ENV_FILE --env ${envName}`)
+          } else {
+            console.error('  gh secret set -f YOUR_ENV_FILE')
           }
+        }
 
-          const shouldUpload = await confirm({
-            message: noSuffix
-              ? `Upload secrets to the '${envName}' environment in this GitHub repo?`
-              : 'Upload secrets to this GitHub repo?',
+        if (noSuffix) {
+          console.error('')
+          console.error(`To create the '${envName}' GitHub environment, run:`)
+          console.error(`  gh api -X PUT repos/{owner}/{repo}/environments/${envName}`)
+        }
+      } catch (err) {
+        console.error(`Error: ${err.message}`)
+        process.exit(1)
+      }
+    })
+
+  program
+    .command('upload')
+    .description('Fetch secrets from aio config and upload directly as GitHub secrets')
+    .option('--no-suffix', 'omit the _PROD/_STAGE suffix from env var names')
+    .action(async (options) => {
+      try {
+        await checkAioCli()
+        await checkGhCli()
+        const config = await fetchAioConfig()
+        validateConfig(config)
+
+        const noSuffix = !options.suffix
+        const envName = noSuffix
+          ? (config.project.workspace.name === 'Production' ? 'production' : 'stage')
+          : null
+
+        const envVars = buildEnvVars(config, { noSuffix })
+        const output = formatEnvVars(envVars)
+
+        const { confirm } = await import('@inquirer/prompts')
+
+        if (noSuffix) {
+          const shouldCreate = await confirm({
+            message: `Create '${envName}' environment in this GitHub repo?`,
             default: false
           })
-          if (shouldUpload) {
-            await uploadSecrets(output, { envName })
-            console.error('Secrets uploaded successfully.')
+          if (shouldCreate) {
+            await createGhEnvironment(envName)
+            console.error(`Environment '${envName}' created (or already existed).`)
           }
+        }
+
+        const shouldUpload = await confirm({
+          message: noSuffix
+            ? `Upload secrets to the '${envName}' environment in this GitHub repo?`
+            : 'Upload secrets to this GitHub repo?',
+          default: false
+        })
+        if (shouldUpload) {
+          await uploadSecrets(output, { envName })
+          console.error('Secrets uploaded successfully.')
         }
       } catch (err) {
         console.error(`Error: ${err.message}`)
