@@ -17,6 +17,22 @@ export async function checkAioCli () {
   }
 }
 
+export async function checkGhCli () {
+  try {
+    await execa('gh', ['--version'])
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      throw new Error(
+        'gh CLI is not installed.\n\n' +
+        'To install it, run:\n' +
+        '  brew install gh\n\n' +
+        'Or visit: https://cli.github.com for other installation options.'
+      )
+    }
+    throw err
+  }
+}
+
 export async function fetchAioConfig () {
   const { stdout } = await execa('aio', ['config', 'ls', '--json'])
   return JSON.parse(stdout)
@@ -73,6 +89,7 @@ export function createCli () {
     .action(async (outputFile) => {
       try {
         await checkAioCli()
+        await checkGhCli()
         const config = await fetchAioConfig()
         validateConfig(config)
         const envVars = buildEnvVars(config)

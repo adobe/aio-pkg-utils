@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { validateConfig, buildEnvVars, formatEnvVars, fetchAioConfig, checkAioCli, createCli } from '../src/index.js'
+import { validateConfig, buildEnvVars, formatEnvVars, fetchAioConfig, checkAioCli, checkGhCli, createCli } from '../src/index.js'
 
 vi.mock('execa')
 vi.mock('node:fs')
@@ -149,6 +149,30 @@ describe('checkAioCli', () => {
     const { execa } = await import('execa')
     execa.mockRejectedValue(new Error('permission denied'))
     await expect(checkAioCli()).rejects.toThrow('permission denied')
+  })
+})
+
+describe('checkGhCli', () => {
+  it('resolves when gh is installed', async () => {
+    const { execa } = await import('execa')
+    execa.mockResolvedValue({ stdout: 'gh version 2.0.0' })
+    await expect(checkGhCli()).resolves.toBeUndefined()
+    expect(execa).toHaveBeenCalledWith('gh', ['--version'])
+  })
+
+  it('throws install instructions when gh is not found', async () => {
+    const { execa } = await import('execa')
+    const err = new Error('spawn gh ENOENT')
+    err.code = 'ENOENT'
+    execa.mockRejectedValue(err)
+    await expect(checkGhCli()).rejects.toThrow('gh CLI is not installed.')
+    await expect(checkGhCli()).rejects.toThrow('brew install gh')
+  })
+
+  it('re-throws non-ENOENT errors', async () => {
+    const { execa } = await import('execa')
+    execa.mockRejectedValue(new Error('permission denied'))
+    await expect(checkGhCli()).rejects.toThrow('permission denied')
   })
 })
 
