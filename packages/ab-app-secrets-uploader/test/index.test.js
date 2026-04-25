@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { validateConfig, buildEnvVars, formatEnvVars, fetchAioConfig, createCli } from '../src/index.js'
+import { validateConfig, buildEnvVars, formatEnvVars, fetchAioConfig, checkAioCli, createCli } from '../src/index.js'
 
 vi.mock('execa')
 vi.mock('node:fs')
@@ -125,6 +125,30 @@ describe('fetchAioConfig', () => {
     const result = await fetchAioConfig()
     expect(execa).toHaveBeenCalledWith('aio', ['config', 'ls', '--json'])
     expect(result).toEqual(stageConfig)
+  })
+})
+
+describe('checkAioCli', () => {
+  it('resolves when aio is installed', async () => {
+    const { execa } = await import('execa')
+    execa.mockResolvedValue({ stdout: '10.0.0' })
+    await expect(checkAioCli()).resolves.toBeUndefined()
+    expect(execa).toHaveBeenCalledWith('aio', ['--version'])
+  })
+
+  it('throws install instructions when aio is not found', async () => {
+    const { execa } = await import('execa')
+    const err = new Error('spawn aio ENOENT')
+    err.code = 'ENOENT'
+    execa.mockRejectedValue(err)
+    await expect(checkAioCli()).rejects.toThrow('aio CLI is not installed.')
+    await expect(checkAioCli()).rejects.toThrow('npm install -g @adobe/aio-cli')
+  })
+
+  it('re-throws non-ENOENT errors', async () => {
+    const { execa } = await import('execa')
+    execa.mockRejectedValue(new Error('permission denied'))
+    await expect(checkAioCli()).rejects.toThrow('permission denied')
   })
 })
 

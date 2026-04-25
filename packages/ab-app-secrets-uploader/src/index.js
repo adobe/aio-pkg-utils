@@ -2,6 +2,21 @@ import { writeFileSync } from 'node:fs'
 import { Command } from 'commander'
 import { execa } from 'execa'
 
+export async function checkAioCli () {
+  try {
+    await execa('aio', ['--version'])
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      throw new Error(
+        'aio CLI is not installed.\n\n' +
+        'To install it, run:\n' +
+        '  npm install -g @adobe/aio-cli'
+      )
+    }
+    throw err
+  }
+}
+
 export async function fetchAioConfig () {
   const { stdout } = await execa('aio', ['config', 'ls', '--json'])
   return JSON.parse(stdout)
@@ -57,6 +72,7 @@ export function createCli () {
     .description('Fetch secrets from aio config and output as GitHub-ready env vars')
     .action(async (outputFile) => {
       try {
+        await checkAioCli()
         const config = await fetchAioConfig()
         validateConfig(config)
         const envVars = buildEnvVars(config)
