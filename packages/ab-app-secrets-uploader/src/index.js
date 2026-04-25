@@ -75,6 +75,10 @@ export function formatEnvVars (envVars) {
   return Object.entries(envVars).map(([k, v]) => `${k}=${v}`).join('\n')
 }
 
+export async function createGhEnvironment (envName) {
+  await execa('gh', ['api', '-X', 'PUT', `repos/{owner}/{repo}/environments/${envName}`])
+}
+
 export function createCli () {
   const program = new Command()
 
@@ -93,7 +97,13 @@ export function createCli () {
         await checkGhCli()
         const config = await fetchAioConfig()
         validateConfig(config)
-        const envVars = buildEnvVars(config, { noSuffix: !options.suffix })
+
+        const noSuffix = !options.suffix
+        const envName = noSuffix
+          ? (config.project.workspace.name === 'Production' ? 'production' : 'stage')
+          : null
+
+        const envVars = buildEnvVars(config, { noSuffix })
         const output = formatEnvVars(envVars)
 
         if (outputFile) {
@@ -101,7 +111,11 @@ export function createCli () {
           console.error(`Environment variables written to ${outputFile}`)
           console.error('')
           console.error('To upload these secrets to a GitHub repository, use:')
-          console.error(`  gh secret set -f ${outputFile}`)
+          if (noSuffix) {
+            console.error(`  gh secret set -f ${outputFile} --env ${envName}`)
+          } else {
+            console.error(`  gh secret set -f ${outputFile}`)
+          }
           console.error('')
           console.error('Make sure you have the GitHub CLI installed and are authenticated before running the command.')
         } else {
@@ -109,9 +123,25 @@ export function createCli () {
           console.error('')
           console.error('To upload these secrets to a GitHub repository:')
           console.error('  1. Copy and paste the above output into a file (e.g., secrets.env)')
-          console.error('  2. Run: gh secret set -f YOUR_ENV_FILE_NAME')
+          if (noSuffix) {
+            console.error(`  2. Run: gh secret set -f YOUR_ENV_FILE_NAME --env ${envName}`)
+          } else {
+            console.error('  2. Run: gh secret set -f YOUR_ENV_FILE_NAME')
+          }
           console.error('')
           console.error('Make sure you have the GitHub CLI installed and are authenticated before running the command.')
+        }
+
+        if (noSuffix) {
+          const { confirm } = await import('@inquirer/prompts')
+          const shouldCreate = await confirm({
+            message: `Create '${envName}' environment in this GitHub repo?`,
+            default: false
+          })
+          if (shouldCreate) {
+            await createGhEnvironment(envName)
+            console.error(`Environment '${envName}' created (or already existed).`)
+          }
         }
       } catch (err) {
         console.error(`Error: ${err.message}`)

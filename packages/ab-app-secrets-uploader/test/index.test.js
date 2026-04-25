@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { validateConfig, buildEnvVars, formatEnvVars, fetchAioConfig, checkAioCli, checkGhCli, createCli } from '../src/index.js'
+import { validateConfig, buildEnvVars, formatEnvVars, fetchAioConfig, checkAioCli, checkGhCli, createGhEnvironment, createCli } from '../src/index.js'
 
 vi.mock('execa')
 vi.mock('node:fs')
+vi.mock('@inquirer/prompts', () => ({ confirm: vi.fn() }))
 
 const stageConfig = {
   project: {
@@ -183,6 +184,22 @@ describe('checkGhCli', () => {
   })
 })
 
+describe('createGhEnvironment', () => {
+  it('calls gh api PUT for the given env name', async () => {
+    const { execa } = await import('execa')
+    execa.mockResolvedValue({})
+    await createGhEnvironment('production')
+    expect(execa).toHaveBeenCalledWith('gh', ['api', '-X', 'PUT', 'repos/{owner}/{repo}/environments/production'])
+  })
+
+  it('calls gh api PUT for stage', async () => {
+    const { execa } = await import('execa')
+    execa.mockResolvedValue({})
+    await createGhEnvironment('stage')
+    expect(execa).toHaveBeenCalledWith('gh', ['api', '-X', 'PUT', 'repos/{owner}/{repo}/environments/stage'])
+  })
+})
+
 describe('createCli', () => {
   it('returns a Command named ab-app-secrets-uploader', () => {
     const cli = createCli()
@@ -195,14 +212,18 @@ describe('createCli', () => {
   })
 
   describe('upload command', () => {
-    let consoleSpy, consoleErrSpy, exitSpy
+    let consoleSpy, consoleErrSpy, exitSpy, confirmMock
 
     beforeEach(async () => {
+      vi.clearAllMocks()
       consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
       consoleErrSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
       exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => { throw new Error('process.exit') })
       const { execa } = await import('execa')
       execa.mockResolvedValue({ stdout: JSON.stringify(stageConfig) })
+      const prompts = await import('@inquirer/prompts')
+      confirmMock = prompts.confirm
+      confirmMock.mockResolvedValue(false)
     })
 
     afterEach(() => {
@@ -215,6 +236,19 @@ describe('createCli', () => {
       const cli = createCli()
       await cli.parseAsync(['node', 'cli', 'upload'])
       expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('CLIENTID_STAGE=client-id-123'))
+    })
+
+    it('does not show prompt when suffix is used', async () => {
+      const cli = createCli()
+      await cli.parseAsync(['node', 'cli', 'upload'])
+      expect(confirmMock).not.toHaveBeenCalled()
+    })
+
+    it('gh secret set hint has no --env when suffix is used', async () => {
+      const cli = createCli()
+      await cli.parseAsync(['node', 'cli', 'upload'])
+      const calls = consoleErrSpy.mock.calls.flat()
+      expect(calls.some(c => c.includes('gh secret set') && !c.includes('--env'))).toBe(true)
     })
 
     it('writes to file and prints guidance when output file given', async () => {
@@ -230,6 +264,61 @@ describe('createCli', () => {
       await cli.parseAsync(['node', 'cli', 'upload', '--no-suffix'])
       expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('CLIENTID=client-id-123'))
       expect(consoleSpy).not.toHaveBeenCalledWith(expect.stringContaining('CLIENTID_STAGE'))
+    })
+
+    it('gh secret set hint includes --env stage when --no-suffix is used (stdout path)', async () => {
+      const cli = createCli()
+      await cli.parseAsync(['node', 'cli', 'upload', '--no-suffix'])
+      expect(consoleErrSpy).toHaveBeenCalledWith(expect.stringContaining('--env stage'))
+    })
+
+    it('gh secret set hint includes --env stage when --no-suffix is used (file path)', async () => {
+      const cli = createCli()
+      await cli.parseAsync(['node', 'cli', 'upload', '--no-suffix', 'secrets.env'])
+      expect(consoleErrSpy).toHaveBeenCalledWith('  gh secret set -f secrets.env --env stage')
+    })
+
+    it('gh secret set hint includes --env production for Production workspace', async () => {
+      const { execa } = await import('execa')
+      execa.mockResolvedValue({ stdout: JSON.stringify(prodConfig) })
+      const cli = createCli()
+      await cli.parseAsync(['node', 'cli', 'upload', '--no-suffix'])
+      expect(consoleErrSpy).toHaveBeenCalledWith(expect.stringContaining('--env production'))
+    })
+
+    it('prompts to create environment when --no-suffix is used', async () => {
+      const cli = createCli()
+      await cli.parseAsync(['node', 'cli', 'upload', '--no-suffix'])
+      expect(confirmMock).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringContaining('stage') }))
+    })
+
+    it('creates stage environment when user confirms', async () => {
+      confirmMock.mockResolvedValue(true)
+      const { execa } = await import('execa')
+      execa.mockResolvedValue({ stdout: JSON.stringify(stageConfig) })
+      const cli = createCli()
+      await cli.parseAsync(['node', 'cli', 'upload', '--no-suffix'])
+      expect(execa).toHaveBeenCalledWith('gh', ['api', '-X', 'PUT', 'repos/{owner}/{repo}/environments/stage'])
+      expect(consoleErrSpy).toHaveBeenCalledWith("Environment 'stage' created (or already existed).")
+    })
+
+    it('creates production environment when user confirms with Production config', async () => {
+      confirmMock.mockResolvedValue(true)
+      const { execa } = await import('execa')
+      execa.mockResolvedValue({ stdout: JSON.stringify(prodConfig) })
+      const cli = createCli()
+      await cli.parseAsync(['node', 'cli', 'upload', '--no-suffix'])
+      expect(execa).toHaveBeenCalledWith('gh', ['api', '-X', 'PUT', 'repos/{owner}/{repo}/environments/production'])
+    })
+
+    it('skips environment creation when user declines', async () => {
+      confirmMock.mockResolvedValue(false)
+      const { execa } = await import('execa')
+      execa.mockResolvedValue({ stdout: JSON.stringify(stageConfig) })
+      const cli = createCli()
+      await cli.parseAsync(['node', 'cli', 'upload', '--no-suffix'])
+      const ghApiCalls = execa.mock.calls.filter(c => c[0] === 'gh' && c[1].includes('-X'))
+      expect(ghApiCalls).toHaveLength(0)
     })
 
     it('prints error and exits on failure', async () => {
