@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { validateConfig, buildEnvVars, formatEnvVars, fetchAioConfig, checkAioCli, checkGhCli, getGhRepo, createGhEnvironment, createCli } from '../src/index.js'
+import { validateConfig, buildEnvVars, formatEnvVars, fetchAioConfig, checkAioCli, checkGhCli, createGhEnvironment, createCli } from '../src/index.js'
 
 vi.mock('execa')
 vi.mock('node:fs')
@@ -214,29 +214,19 @@ describe('checkGhCli', () => {
   })
 })
 
-describe('getGhRepo', () => {
-  it('returns trimmed nameWithOwner from gh repo view', async () => {
-    const { execa } = await import('execa')
-    execa.mockResolvedValue({ stdout: 'adobe/my-app\n' })
-    const result = await getGhRepo()
-    expect(execa).toHaveBeenCalledWith('gh', ['repo', 'view', '--json', 'nameWithOwner', '-q', '.nameWithOwner'])
-    expect(result).toBe('adobe/my-app')
-  })
-})
-
 describe('createGhEnvironment', () => {
-  it('calls gh api PUT with the resolved repo and env name', async () => {
+  it('calls gh api PUT for the given env name', async () => {
     const { execa } = await import('execa')
-    execa.mockResolvedValue({ stdout: 'adobe/my-app\n' })
+    execa.mockResolvedValue({})
     await createGhEnvironment('production')
-    expect(execa).toHaveBeenCalledWith('gh', ['api', '-X', 'PUT', 'repos/adobe/my-app/environments/production'])
+    expect(execa).toHaveBeenCalledWith('gh', ['api', '-X', 'PUT', 'repos/{owner}/{repo}/environments/production'])
   })
 
   it('calls gh api PUT for stage', async () => {
     const { execa } = await import('execa')
-    execa.mockResolvedValue({ stdout: 'adobe/my-app\n' })
+    execa.mockResolvedValue({})
     await createGhEnvironment('stage')
-    expect(execa).toHaveBeenCalledWith('gh', ['api', '-X', 'PUT', 'repos/adobe/my-app/environments/stage'])
+    expect(execa).toHaveBeenCalledWith('gh', ['api', '-X', 'PUT', 'repos/{owner}/{repo}/environments/stage'])
   })
 })
 
@@ -335,28 +325,20 @@ describe('createCli', () => {
     it('creates stage environment when user confirms', async () => {
       confirmMock.mockResolvedValue(true)
       const { execa } = await import('execa')
-      execa.mockImplementation((cmd, args) => {
-        if (cmd === 'aio' && args.includes('config')) return Promise.resolve({ stdout: JSON.stringify(stageConfig) })
-        if (cmd === 'gh' && args.includes('nameWithOwner')) return Promise.resolve({ stdout: 'adobe/my-app\n' })
-        return Promise.resolve({})
-      })
+      execa.mockResolvedValue({ stdout: JSON.stringify(stageConfig) })
       const cli = createCli()
       await cli.parseAsync(['node', 'cli', 'upload', '--no-suffix'])
-      expect(execa).toHaveBeenCalledWith('gh', ['api', '-X', 'PUT', 'repos/adobe/my-app/environments/stage'])
+      expect(execa).toHaveBeenCalledWith('gh', ['api', '-X', 'PUT', 'repos/{owner}/{repo}/environments/stage'])
       expect(consoleErrSpy).toHaveBeenCalledWith("Environment 'stage' created (or already existed).")
     })
 
     it('creates production environment when user confirms with Production config', async () => {
       confirmMock.mockResolvedValue(true)
       const { execa } = await import('execa')
-      execa.mockImplementation((cmd, args) => {
-        if (cmd === 'aio' && args.includes('config')) return Promise.resolve({ stdout: JSON.stringify(prodConfig) })
-        if (cmd === 'gh' && args.includes('nameWithOwner')) return Promise.resolve({ stdout: 'adobe/my-app\n' })
-        return Promise.resolve({})
-      })
+      execa.mockResolvedValue({ stdout: JSON.stringify(prodConfig) })
       const cli = createCli()
       await cli.parseAsync(['node', 'cli', 'upload', '--no-suffix'])
-      expect(execa).toHaveBeenCalledWith('gh', ['api', '-X', 'PUT', 'repos/adobe/my-app/environments/production'])
+      expect(execa).toHaveBeenCalledWith('gh', ['api', '-X', 'PUT', 'repos/{owner}/{repo}/environments/production'])
     })
 
     it('skips environment creation when user declines', async () => {
