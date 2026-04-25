@@ -55,11 +55,11 @@ export function buildEnvVars (config, { noSuffix = false } = {}) {
 
   return {
     [`CLIENTID${suffix}`]: imsCtx.client_id,
-    [`CLIENTSECRET${suffix}`]: imsCtx.client_secrets[0],
+    [`CLIENTSECRET${suffix}`]: (Array.isArray(imsCtx.client_secrets) ? imsCtx.client_secrets : JSON.parse(imsCtx.client_secrets))[0],
     [`TECHNICALACCID${suffix}`]: imsCtx.technical_account_id,
     [`TECHNICALACCEMAIL${suffix}`]: imsCtx.technical_account_email,
     [`IMSORGID${suffix}`]: imsCtx.ims_org_id,
-    [`SCOPES${suffix}`]: imsCtx.scopes.join(','),
+    [`SCOPES${suffix}`]: (Array.isArray(imsCtx.scopes) ? imsCtx.scopes : String(imsCtx.scopes).split(',')).join(','),
     [`AIO_RUNTIME_NAMESPACE${suffix}`]: config.runtime.namespace,
     [`AIO_RUNTIME_AUTH${suffix}`]: config.runtime.auth,
     [`AIO_PROJECT_ID${suffix}`]: config.project.id,

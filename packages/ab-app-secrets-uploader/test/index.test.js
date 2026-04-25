@@ -96,6 +96,21 @@ describe('buildEnvVars', () => {
     expect(vars.SCOPES_STAGE).toBe('openid,AdobeID')
   })
 
+  it('handles scopes as a comma-separated string', () => {
+    const cfg = {
+      ...stageConfig,
+      ims: {
+        contexts: {
+          myapp_oauth: {
+            ...stageConfig.ims.contexts.myapp_oauth,
+            scopes: 'openid,AdobeID'
+          }
+        }
+      }
+    }
+    expect(buildEnvVars(cfg).SCOPES_STAGE).toBe('openid,AdobeID')
+  })
+
   it('omits suffix when noSuffix is true', () => {
     const vars = buildEnvVars(stageConfig, { noSuffix: true })
     expect(vars).toHaveProperty('CLIENTID', 'client-id-123')
@@ -116,6 +131,21 @@ describe('buildEnvVars', () => {
       }
     }
     expect(buildEnvVars(cfg).CLIENTSECRET_STAGE).toBe('first-secret')
+  })
+
+  it('handles client_secrets as a JSON-encoded string', () => {
+    const cfg = {
+      ...stageConfig,
+      ims: {
+        contexts: {
+          myapp_oauth: {
+            ...stageConfig.ims.contexts.myapp_oauth,
+            client_secrets: '["encoded-secret","other"]'
+          }
+        }
+      }
+    }
+    expect(buildEnvVars(cfg).CLIENTSECRET_STAGE).toBe('encoded-secret')
   })
 })
 
