@@ -90,6 +90,12 @@ export async function createGhEnvironment (envName) {
   }
 }
 
+export async function uploadSecrets (output, { envName = null } = {}) {
+  const args = ['secret', 'set', '-f', '-']
+  if (envName) args.push('--env', envName)
+  await execa('gh', args, { input: output })
+}
+
 export function createCli () {
   const program = new Command()
 
@@ -99,10 +105,11 @@ export function createCli () {
     .version('0.1.0')
 
   program
-    .command('upload [output-file]')
-    .description('Fetch secrets from aio config and output as GitHub-ready env vars')
+    .command('upload')
+    .description('Fetch secrets from aio config and upload as GitHub secrets')
+    .option('--output <file>', 'write env vars to a file instead of uploading directly')
     .option('--no-suffix', 'omit the _PROD/_STAGE suffix from env var names')
-    .action(async (outputFile, options) => {
+    .action(async (options) => {
       try {
         await checkAioCli()
         await checkGhCli()
@@ -117,41 +124,44 @@ export function createCli () {
         const envVars = buildEnvVars(config, { noSuffix })
         const output = formatEnvVars(envVars)
 
-        if (outputFile) {
-          writeFileSync(outputFile, output)
-          console.error(`Environment variables written to ${outputFile}`)
+        if (options.output) {
+          writeFileSync(options.output, output)
+          console.error(`Environment variables written to ${options.output}`)
           console.error('')
-          console.error('To upload these secrets to a GitHub repository, use:')
+          console.error('To upload these secrets to a GitHub repository, run:')
           if (noSuffix) {
-            console.error(`  gh secret set -f ${outputFile} --env ${envName}`)
+            console.error(`  gh secret set -f ${options.output} --env ${envName}`)
           } else {
-            console.error(`  gh secret set -f ${outputFile}`)
+            console.error(`  gh secret set -f ${options.output}`)
           }
-          console.error('')
-          console.error('Make sure you have the GitHub CLI installed and are authenticated before running the command.')
+          if (noSuffix) {
+            console.error('')
+            console.error(`To create the '${envName}' GitHub environment, run:`)
+            console.error(`  gh api -X PUT repos/{owner}/{repo}/environments/${envName}`)
+          }
         } else {
-          console.log(output)
-          console.error('')
-          console.error('To upload these secrets to a GitHub repository:')
-          console.error('  1. Copy and paste the above output into a file (e.g., secrets.env)')
-          if (noSuffix) {
-            console.error(`  2. Run: gh secret set -f YOUR_ENV_FILE_NAME --env ${envName}`)
-          } else {
-            console.error('  2. Run: gh secret set -f YOUR_ENV_FILE_NAME')
-          }
-          console.error('')
-          console.error('Make sure you have the GitHub CLI installed and are authenticated before running the command.')
-        }
-
-        if (noSuffix) {
           const { confirm } = await import('@inquirer/prompts')
-          const shouldCreate = await confirm({
-            message: `Create '${envName}' environment in this GitHub repo?`,
+
+          if (noSuffix) {
+            const shouldCreate = await confirm({
+              message: `Create '${envName}' environment in this GitHub repo?`,
+              default: false
+            })
+            if (shouldCreate) {
+              await createGhEnvironment(envName)
+              console.error(`Environment '${envName}' created (or already existed).`)
+            }
+          }
+
+          const shouldUpload = await confirm({
+            message: noSuffix
+              ? `Upload secrets to the '${envName}' environment in this GitHub repo?`
+              : 'Upload secrets to this GitHub repo?',
             default: false
           })
-          if (shouldCreate) {
-            await createGhEnvironment(envName)
-            console.error(`Environment '${envName}' created (or already existed).`)
+          if (shouldUpload) {
+            await uploadSecrets(output, { envName })
+            console.error('Secrets uploaded successfully.')
           }
         }
       } catch (err) {

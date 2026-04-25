@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { validateConfig, buildEnvVars, formatEnvVars, fetchAioConfig, checkAioCli, checkGhCli, createGhEnvironment, createCli } from '../src/index.js'
+import { validateConfig, buildEnvVars, formatEnvVars, fetchAioConfig, checkAioCli, checkGhCli, createGhEnvironment, uploadSecrets, createCli } from '../src/index.js'
 
 vi.mock('execa')
 vi.mock('node:fs')
@@ -99,14 +99,7 @@ describe('buildEnvVars', () => {
   it('handles scopes as a comma-separated string', () => {
     const cfg = {
       ...stageConfig,
-      ims: {
-        contexts: {
-          myapp_oauth: {
-            ...stageConfig.ims.contexts.myapp_oauth,
-            scopes: 'openid,AdobeID'
-          }
-        }
-      }
+      ims: { contexts: { myapp_oauth: { ...stageConfig.ims.contexts.myapp_oauth, scopes: 'openid,AdobeID' } } }
     }
     expect(buildEnvVars(cfg).SCOPES_STAGE).toBe('openid,AdobeID')
   })
@@ -121,14 +114,7 @@ describe('buildEnvVars', () => {
   it('uses the first client secret', () => {
     const cfg = {
       ...stageConfig,
-      ims: {
-        contexts: {
-          myapp_oauth: {
-            ...stageConfig.ims.contexts.myapp_oauth,
-            client_secrets: ['first-secret', 'second-secret']
-          }
-        }
-      }
+      ims: { contexts: { myapp_oauth: { ...stageConfig.ims.contexts.myapp_oauth, client_secrets: ['first-secret', 'second-secret'] } } }
     }
     expect(buildEnvVars(cfg).CLIENTSECRET_STAGE).toBe('first-secret')
   })
@@ -136,14 +122,7 @@ describe('buildEnvVars', () => {
   it('handles client_secrets as a JSON-encoded string', () => {
     const cfg = {
       ...stageConfig,
-      ims: {
-        contexts: {
-          myapp_oauth: {
-            ...stageConfig.ims.contexts.myapp_oauth,
-            client_secrets: '["encoded-secret","other"]'
-          }
-        }
-      }
+      ims: { contexts: { myapp_oauth: { ...stageConfig.ims.contexts.myapp_oauth, client_secrets: '["encoded-secret","other"]' } } }
     }
     expect(buildEnvVars(cfg).CLIENTSECRET_STAGE).toBe('encoded-secret')
   })
@@ -252,6 +231,22 @@ describe('createGhEnvironment', () => {
   })
 })
 
+describe('uploadSecrets', () => {
+  it('pipes output to gh secret set', async () => {
+    const { execa } = await import('execa')
+    execa.mockResolvedValue({})
+    await uploadSecrets('FOO=bar\nBAZ=qux')
+    expect(execa).toHaveBeenCalledWith('gh', ['secret', 'set', '-f', '-'], { input: 'FOO=bar\nBAZ=qux' })
+  })
+
+  it('includes --env flag when envName is provided', async () => {
+    const { execa } = await import('execa')
+    execa.mockResolvedValue({})
+    await uploadSecrets('FOO=bar', { envName: 'stage' })
+    expect(execa).toHaveBeenCalledWith('gh', ['secret', 'set', '-f', '-', '--env', 'stage'], { input: 'FOO=bar' })
+  })
+})
+
 describe('createCli', () => {
   it('returns a Command named ab-app-secrets-uploader', () => {
     const cli = createCli()
@@ -263,7 +258,83 @@ describe('createCli', () => {
     expect(cli.commands.map(c => c.name())).toContain('upload')
   })
 
-  describe('upload command', () => {
+  describe('upload command — --output mode (no prompts)', () => {
+    let consoleErrSpy, exitSpy
+
+    beforeEach(async () => {
+      vi.clearAllMocks()
+      consoleErrSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => { throw new Error('process.exit') })
+      const { execa } = await import('execa')
+      execa.mockResolvedValue({ stdout: JSON.stringify(stageConfig) })
+    })
+
+    afterEach(() => {
+      consoleErrSpy.mockRestore()
+      exitSpy.mockRestore()
+    })
+
+    it('writes env vars to file', async () => {
+      const { writeFileSync } = await import('node:fs')
+      const cli = createCli()
+      await cli.parseAsync(['node', 'cli', 'upload', '--output', 'secrets.env'])
+      expect(writeFileSync).toHaveBeenCalledWith('secrets.env', expect.stringContaining('CLIENTID_STAGE'))
+      expect(consoleErrSpy).toHaveBeenCalledWith('Environment variables written to secrets.env')
+    })
+
+    it('prints gh secret set hint without --env when suffix is used', async () => {
+      const cli = createCli()
+      await cli.parseAsync(['node', 'cli', 'upload', '--output', 'secrets.env'])
+      expect(consoleErrSpy).toHaveBeenCalledWith('  gh secret set -f secrets.env')
+    })
+
+    it('prints gh secret set hint with --env when --no-suffix is used', async () => {
+      const cli = createCli()
+      await cli.parseAsync(['node', 'cli', 'upload', '--output', 'secrets.env', '--no-suffix'])
+      expect(consoleErrSpy).toHaveBeenCalledWith('  gh secret set -f secrets.env --env stage')
+    })
+
+    it('prints gh api env-creation hint when --no-suffix is used', async () => {
+      const cli = createCli()
+      await cli.parseAsync(['node', 'cli', 'upload', '--output', 'secrets.env', '--no-suffix'])
+      expect(consoleErrSpy).toHaveBeenCalledWith("To create the 'stage' GitHub environment, run:")
+      expect(consoleErrSpy).toHaveBeenCalledWith('  gh api -X PUT repos/{owner}/{repo}/environments/stage')
+    })
+
+    it('prints production env hint for Production workspace', async () => {
+      const { execa } = await import('execa')
+      execa.mockResolvedValue({ stdout: JSON.stringify(prodConfig) })
+      const cli = createCli()
+      await cli.parseAsync(['node', 'cli', 'upload', '--output', 'out.env', '--no-suffix'])
+      expect(consoleErrSpy).toHaveBeenCalledWith('  gh secret set -f out.env --env production')
+      expect(consoleErrSpy).toHaveBeenCalledWith('  gh api -X PUT repos/{owner}/{repo}/environments/production')
+    })
+
+    it('shows no gh api hint when suffix is used', async () => {
+      const cli = createCli()
+      await cli.parseAsync(['node', 'cli', 'upload', '--output', 'secrets.env'])
+      const calls = consoleErrSpy.mock.calls.flat()
+      expect(calls.some(c => c.includes('gh api'))).toBe(false)
+    })
+
+    it('does not call uploadSecrets', async () => {
+      const { execa } = await import('execa')
+      execa.mockResolvedValue({ stdout: JSON.stringify(stageConfig) })
+      const cli = createCli()
+      await cli.parseAsync(['node', 'cli', 'upload', '--output', 'secrets.env'])
+      const secretSetCalls = execa.mock.calls.filter(c => c[1]?.includes('set'))
+      expect(secretSetCalls).toHaveLength(0)
+    })
+
+    it('shows no prompts', async () => {
+      const { confirm } = await import('@inquirer/prompts')
+      const cli = createCli()
+      await cli.parseAsync(['node', 'cli', 'upload', '--output', 'secrets.env', '--no-suffix'])
+      expect(confirm).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('upload command — default mode (direct upload)', () => {
     let consoleSpy, consoleErrSpy, exitSpy, confirmMock
 
     beforeEach(async () => {
@@ -284,93 +355,82 @@ describe('createCli', () => {
       exitSpy.mockRestore()
     })
 
-    it('prints env vars to stdout when no output file given', async () => {
+    it('prompts to upload (suffix mode)', async () => {
       const cli = createCli()
       await cli.parseAsync(['node', 'cli', 'upload'])
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('CLIENTID_STAGE=client-id-123'))
+      expect(confirmMock).toHaveBeenCalledWith(expect.objectContaining({
+        message: 'Upload secrets to this GitHub repo?'
+      }))
     })
 
-    it('does not show prompt when suffix is used', async () => {
-      const cli = createCli()
-      await cli.parseAsync(['node', 'cli', 'upload'])
-      expect(confirmMock).not.toHaveBeenCalled()
-    })
-
-    it('gh secret set hint has no --env when suffix is used', async () => {
-      const cli = createCli()
-      await cli.parseAsync(['node', 'cli', 'upload'])
-      const calls = consoleErrSpy.mock.calls.flat()
-      expect(calls.some(c => c.includes('gh secret set') && !c.includes('--env'))).toBe(true)
-    })
-
-    it('writes to file and prints guidance when output file given', async () => {
-      const { writeFileSync } = await import('node:fs')
-      const cli = createCli()
-      await cli.parseAsync(['node', 'cli', 'upload', 'secrets.env'])
-      expect(writeFileSync).toHaveBeenCalledWith('secrets.env', expect.stringContaining('CLIENTID_STAGE'))
-      expect(consoleErrSpy).toHaveBeenCalledWith('Environment variables written to secrets.env')
-    })
-
-    it('omits suffix when --no-suffix flag is passed', async () => {
-      const cli = createCli()
-      await cli.parseAsync(['node', 'cli', 'upload', '--no-suffix'])
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('CLIENTID=client-id-123'))
-      expect(consoleSpy).not.toHaveBeenCalledWith(expect.stringContaining('CLIENTID_STAGE'))
-    })
-
-    it('gh secret set hint includes --env stage when --no-suffix is used (stdout path)', async () => {
-      const cli = createCli()
-      await cli.parseAsync(['node', 'cli', 'upload', '--no-suffix'])
-      expect(consoleErrSpy).toHaveBeenCalledWith(expect.stringContaining('--env stage'))
-    })
-
-    it('gh secret set hint includes --env stage when --no-suffix is used (file path)', async () => {
-      const cli = createCli()
-      await cli.parseAsync(['node', 'cli', 'upload', '--no-suffix', 'secrets.env'])
-      expect(consoleErrSpy).toHaveBeenCalledWith('  gh secret set -f secrets.env --env stage')
-    })
-
-    it('gh secret set hint includes --env production for Production workspace', async () => {
+    it('uploads when confirmed (suffix mode)', async () => {
+      confirmMock.mockResolvedValue(true)
       const { execa } = await import('execa')
-      execa.mockResolvedValue({ stdout: JSON.stringify(prodConfig) })
+      execa.mockResolvedValue({ stdout: JSON.stringify(stageConfig) })
       const cli = createCli()
-      await cli.parseAsync(['node', 'cli', 'upload', '--no-suffix'])
-      expect(consoleErrSpy).toHaveBeenCalledWith(expect.stringContaining('--env production'))
+      await cli.parseAsync(['node', 'cli', 'upload'])
+      expect(execa).toHaveBeenCalledWith('gh', ['secret', 'set', '-f', '-'], { input: expect.stringContaining('CLIENTID_STAGE') })
+      expect(consoleErrSpy).toHaveBeenCalledWith('Secrets uploaded successfully.')
     })
 
-    it('prompts to create environment when --no-suffix is used', async () => {
+    it('does not upload when declined (suffix mode)', async () => {
+      confirmMock.mockResolvedValue(false)
+      const { execa } = await import('execa')
+      execa.mockResolvedValue({ stdout: JSON.stringify(stageConfig) })
       const cli = createCli()
-      await cli.parseAsync(['node', 'cli', 'upload', '--no-suffix'])
-      expect(confirmMock).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringContaining('stage') }))
+      await cli.parseAsync(['node', 'cli', 'upload'])
+      const secretSetCalls = execa.mock.calls.filter(c => c[1]?.includes('set'))
+      expect(secretSetCalls).toHaveLength(0)
     })
 
-    it('creates stage environment when user confirms', async () => {
+    it('prompts to create env then upload when --no-suffix', async () => {
+      const cli = createCli()
+      await cli.parseAsync(['node', 'cli', 'upload', '--no-suffix'])
+      expect(confirmMock).toHaveBeenNthCalledWith(1, expect.objectContaining({ message: expect.stringContaining('Create') }))
+      expect(confirmMock).toHaveBeenNthCalledWith(2, expect.objectContaining({ message: expect.stringContaining("'stage' environment") }))
+    })
+
+    it('creates env and uploads when both confirmed (stage)', async () => {
       confirmMock.mockResolvedValue(true)
       const { execa } = await import('execa')
       execa.mockResolvedValue({ stdout: JSON.stringify(stageConfig) })
       const cli = createCli()
       await cli.parseAsync(['node', 'cli', 'upload', '--no-suffix'])
       expect(execa).toHaveBeenCalledWith('gh', ['api', '-X', 'PUT', 'repos/{owner}/{repo}/environments/stage'])
+      expect(execa).toHaveBeenCalledWith('gh', ['secret', 'set', '-f', '-', '--env', 'stage'], { input: expect.stringContaining('CLIENTID=') })
       expect(consoleErrSpy).toHaveBeenCalledWith("Environment 'stage' created (or already existed).")
+      expect(consoleErrSpy).toHaveBeenCalledWith('Secrets uploaded successfully.')
     })
 
-    it('creates production environment when user confirms with Production config', async () => {
+    it('creates env and uploads when both confirmed (production)', async () => {
       confirmMock.mockResolvedValue(true)
       const { execa } = await import('execa')
       execa.mockResolvedValue({ stdout: JSON.stringify(prodConfig) })
       const cli = createCli()
       await cli.parseAsync(['node', 'cli', 'upload', '--no-suffix'])
       expect(execa).toHaveBeenCalledWith('gh', ['api', '-X', 'PUT', 'repos/{owner}/{repo}/environments/production'])
+      expect(execa).toHaveBeenCalledWith('gh', ['secret', 'set', '-f', '-', '--env', 'production'], { input: expect.any(String) })
     })
 
-    it('skips environment creation when user declines', async () => {
-      confirmMock.mockResolvedValue(false)
+    it('skips env creation but uploads when only upload is confirmed', async () => {
+      confirmMock.mockResolvedValueOnce(false).mockResolvedValueOnce(true)
       const { execa } = await import('execa')
       execa.mockResolvedValue({ stdout: JSON.stringify(stageConfig) })
       const cli = createCli()
       await cli.parseAsync(['node', 'cli', 'upload', '--no-suffix'])
-      const ghApiCalls = execa.mock.calls.filter(c => c[0] === 'gh' && c[1].includes('-X'))
+      const ghApiCalls = execa.mock.calls.filter(c => c[1]?.includes('-X'))
       expect(ghApiCalls).toHaveLength(0)
+      expect(execa).toHaveBeenCalledWith('gh', ['secret', 'set', '-f', '-', '--env', 'stage'], { input: expect.any(String) })
+    })
+
+    it('does not write a file', async () => {
+      confirmMock.mockResolvedValue(true)
+      const { writeFileSync } = await import('node:fs')
+      const { execa } = await import('execa')
+      execa.mockResolvedValue({ stdout: JSON.stringify(stageConfig) })
+      const cli = createCli()
+      await cli.parseAsync(['node', 'cli', 'upload'])
+      expect(writeFileSync).not.toHaveBeenCalled()
     })
 
     it('prints error and exits on failure', async () => {
