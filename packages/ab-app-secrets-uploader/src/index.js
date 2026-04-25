@@ -105,11 +105,10 @@ export function createCli () {
     .version('0.1.0')
 
   program
-    .command('create-env')
+    .command('create-env <output-file>')
     .description('Fetch secrets from aio config and write to a file with upload instructions')
-    .option('--output <file>', 'file to write env vars to')
     .option('--no-suffix', 'omit the _PROD/_STAGE suffix from env var names')
-    .action(async (options) => {
+    .action(async (outputFile, options) => {
       try {
         await checkAioCli()
         await checkGhCli()
@@ -124,33 +123,23 @@ export function createCli () {
         const envVars = buildEnvVars(config, { noSuffix })
         const output = formatEnvVars(envVars)
 
-        if (options.output) {
-          if (existsSync(options.output)) {
-            const { confirm } = await import('@inquirer/prompts')
-            const overwrite = await confirm({
-              message: `'${options.output}' already exists. Overwrite?`,
-              default: false
-            })
-            if (!overwrite) return
-          }
-          writeFileSync(options.output, output)
-          console.error(`Environment variables written to ${options.output}`)
-          console.error('')
-          console.error('To upload these secrets to a GitHub repository, run:')
-          if (noSuffix) {
-            console.error(`  gh secret set -f ${options.output} --env ${envName}`)
-          } else {
-            console.error(`  gh secret set -f ${options.output}`)
-          }
+        if (existsSync(outputFile)) {
+          const { confirm } = await import('@inquirer/prompts')
+          const overwrite = await confirm({
+            message: `'${outputFile}' already exists. Overwrite?`,
+            default: false
+          })
+          if (!overwrite) return
+        }
+
+        writeFileSync(outputFile, output)
+        console.error(`Environment variables written to ${outputFile}`)
+        console.error('')
+        console.error('To upload these secrets to a GitHub repository, run:')
+        if (noSuffix) {
+          console.error(`  gh secret set -f ${outputFile} --env ${envName}`)
         } else {
-          console.log(output)
-          console.error('')
-          console.error('To upload these secrets to a GitHub repository, run:')
-          if (noSuffix) {
-            console.error(`  gh secret set -f YOUR_ENV_FILE --env ${envName}`)
-          } else {
-            console.error('  gh secret set -f YOUR_ENV_FILE')
-          }
+          console.error(`  gh secret set -f ${outputFile}`)
         }
 
         if (noSuffix) {

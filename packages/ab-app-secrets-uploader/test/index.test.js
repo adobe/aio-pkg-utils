@@ -261,11 +261,10 @@ describe('createCli', () => {
   })
 
   describe('create-env command (no prompts)', () => {
-    let consoleSpy, consoleErrSpy, exitSpy
+    let consoleErrSpy, exitSpy
 
     beforeEach(async () => {
       vi.clearAllMocks()
-      consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
       consoleErrSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
       exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => { throw new Error('process.exit') })
       const { execa } = await import('execa')
@@ -275,23 +274,16 @@ describe('createCli', () => {
     })
 
     afterEach(() => {
-      consoleSpy.mockRestore()
       consoleErrSpy.mockRestore()
       exitSpy.mockRestore()
     })
 
-    it('writes env vars to file when --output is given', async () => {
+    it('writes env vars to the output file', async () => {
       const { writeFileSync } = await import('node:fs')
       const cli = createCli()
-      await cli.parseAsync(['node', 'cli', 'create-env', '--output', 'secrets.env'])
+      await cli.parseAsync(['node', 'cli', 'create-env', 'secrets.env'])
       expect(writeFileSync).toHaveBeenCalledWith('secrets.env', expect.stringContaining('CLIENTID_STAGE'))
       expect(consoleErrSpy).toHaveBeenCalledWith('Environment variables written to secrets.env')
-    })
-
-    it('prints to stdout when --output is not given', async () => {
-      const cli = createCli()
-      await cli.parseAsync(['node', 'cli', 'create-env'])
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('CLIENTID_STAGE=client-id-123'))
     })
 
     it('prompts for confirmation if output file already exists', async () => {
@@ -301,7 +293,7 @@ describe('createCli', () => {
       confirm.mockResolvedValue(false)
       const { writeFileSync } = await import('node:fs')
       const cli = createCli()
-      await cli.parseAsync(['node', 'cli', 'create-env', '--output', 'secrets.env'])
+      await cli.parseAsync(['node', 'cli', 'create-env', 'secrets.env'])
       expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringContaining('already exists') }))
       expect(writeFileSync).not.toHaveBeenCalled()
     })
@@ -313,32 +305,19 @@ describe('createCli', () => {
       confirm.mockResolvedValue(true)
       const { writeFileSync } = await import('node:fs')
       const cli = createCli()
-      await cli.parseAsync(['node', 'cli', 'create-env', '--output', 'secrets.env'])
+      await cli.parseAsync(['node', 'cli', 'create-env', 'secrets.env'])
       expect(writeFileSync).toHaveBeenCalledWith('secrets.env', expect.any(String))
     })
 
-    it('prints gh secret set hint with file when --output is given', async () => {
+    it('prints gh secret set hint with filename', async () => {
       const cli = createCli()
-      await cli.parseAsync(['node', 'cli', 'create-env', '--output', 'secrets.env'])
+      await cli.parseAsync(['node', 'cli', 'create-env', 'secrets.env'])
       expect(consoleErrSpy).toHaveBeenCalledWith('  gh secret set -f secrets.env')
-    })
-
-    it('prints gh secret set hint without file when --output is not given', async () => {
-      const cli = createCli()
-      await cli.parseAsync(['node', 'cli', 'create-env'])
-      expect(consoleErrSpy).toHaveBeenCalledWith('  gh secret set -f YOUR_ENV_FILE')
-    })
-
-    it('prints --env hint to stdout path when --no-suffix and no --output', async () => {
-      const cli = createCli()
-      await cli.parseAsync(['node', 'cli', 'create-env', '--no-suffix'])
-      expect(consoleErrSpy).toHaveBeenCalledWith('  gh secret set -f YOUR_ENV_FILE --env stage')
-      expect(consoleErrSpy).toHaveBeenCalledWith('  gh api -X PUT repos/{owner}/{repo}/environments/stage')
     })
 
     it('prints --env in hint and gh api command when --no-suffix is used', async () => {
       const cli = createCli()
-      await cli.parseAsync(['node', 'cli', 'create-env', '--output', 'secrets.env', '--no-suffix'])
+      await cli.parseAsync(['node', 'cli', 'create-env', 'secrets.env', '--no-suffix'])
       expect(consoleErrSpy).toHaveBeenCalledWith('  gh secret set -f secrets.env --env stage')
       expect(consoleErrSpy).toHaveBeenCalledWith("To create the 'stage' GitHub environment, run:")
       expect(consoleErrSpy).toHaveBeenCalledWith('  gh api -X PUT repos/{owner}/{repo}/environments/stage')
@@ -348,22 +327,22 @@ describe('createCli', () => {
       const { execa } = await import('execa')
       execa.mockResolvedValue({ stdout: JSON.stringify(prodConfig) })
       const cli = createCli()
-      await cli.parseAsync(['node', 'cli', 'create-env', '--output', 'out.env', '--no-suffix'])
+      await cli.parseAsync(['node', 'cli', 'create-env', 'out.env', '--no-suffix'])
       expect(consoleErrSpy).toHaveBeenCalledWith('  gh secret set -f out.env --env production')
       expect(consoleErrSpy).toHaveBeenCalledWith('  gh api -X PUT repos/{owner}/{repo}/environments/production')
     })
 
     it('shows no gh api hint when suffix is used', async () => {
       const cli = createCli()
-      await cli.parseAsync(['node', 'cli', 'create-env', '--output', 'secrets.env'])
+      await cli.parseAsync(['node', 'cli', 'create-env', 'secrets.env'])
       const calls = consoleErrSpy.mock.calls.flat()
       expect(calls.some(c => c.includes('gh api'))).toBe(false)
     })
 
-    it('shows no prompts', async () => {
+    it('shows no prompts when file does not exist', async () => {
       const { confirm } = await import('@inquirer/prompts')
       const cli = createCli()
-      await cli.parseAsync(['node', 'cli', 'create-env', '--output', 'secrets.env', '--no-suffix'])
+      await cli.parseAsync(['node', 'cli', 'create-env', 'secrets.env', '--no-suffix'])
       expect(confirm).not.toHaveBeenCalled()
     })
 
@@ -371,7 +350,7 @@ describe('createCli', () => {
       const { execa } = await import('execa')
       execa.mockRejectedValue(new Error('aio not found'))
       const cli = createCli()
-      await expect(cli.parseAsync(['node', 'cli', 'create-env'])).rejects.toThrow('process.exit')
+      await expect(cli.parseAsync(['node', 'cli', 'create-env', 'secrets.env'])).rejects.toThrow('process.exit')
       expect(consoleErrSpy).toHaveBeenCalledWith('Error: aio not found')
       expect(exitSpy).toHaveBeenCalledWith(1)
     })
