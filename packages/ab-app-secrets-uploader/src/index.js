@@ -171,7 +171,7 @@ export function createCli () {
           if (!overwrite) return
         }
 
-        writeFileSync(outputFile, output)
+        writeFileSync(outputFile, output, { mode: 0o600 })
         console.error(`Environment variables written to ${outputFile}`)
         console.error('')
         console.error('To upload these secrets to a GitHub repository, run:')

@@ -282,7 +282,7 @@ describe('createCli', () => {
       const { writeFileSync } = await import('node:fs')
       const cli = createCli()
       await cli.parseAsync(['node', 'cli', 'create-env', 'secrets.env'])
-      expect(writeFileSync).toHaveBeenCalledWith('secrets.env', expect.stringContaining('CLIENTID_STAGE'))
+      expect(writeFileSync).toHaveBeenCalledWith('secrets.env', expect.stringContaining('CLIENTID_STAGE'), { mode: 0o600 })
       expect(consoleErrSpy).toHaveBeenCalledWith('Environment variables written to secrets.env')
     })
 
@@ -306,7 +306,7 @@ describe('createCli', () => {
       const { writeFileSync } = await import('node:fs')
       const cli = createCli()
       await cli.parseAsync(['node', 'cli', 'create-env', 'secrets.env'])
-      expect(writeFileSync).toHaveBeenCalledWith('secrets.env', expect.any(String))
+      expect(writeFileSync).toHaveBeenCalledWith('secrets.env', expect.any(String), { mode: 0o600 })
     })
 
     it('prints gh secret set hint with filename', async () => {
