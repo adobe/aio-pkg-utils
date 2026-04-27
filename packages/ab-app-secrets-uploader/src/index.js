@@ -41,19 +41,53 @@ export async function fetchAioConfig () {
   return JSON.parse(stdout)
 }
 
+function getServerToServerImsContext (config) {
+  const credentials = config?.project?.workspace?.details?.credentials
+  if (!Array.isArray(credentials)) {
+    throw new Error(
+      'Your Adobe Developer App configuration is missing workspace credentials.\n\n' +
+      'Run `aio config ls --json` to inspect the active workspace and ensure it includes an OAuth Server-to-Server credential.'
+    )
+  }
+
+  const credential = credentials.find(c => c.integration_type === 'oauth_server_to_server')
+  if (!credential) {
+    throw new Error(
+      'No OAuth Server-to-Server credential was found in the active workspace.\n\n' +
+      'Update your Adobe Developer App to include an OAuth Server-to-Server credential, then try again.'
+    )
+  }
+
+  const ctx = credential.name?.toLowerCase()
+  if (!ctx) {
+    throw new Error(
+      'The OAuth Server-to-Server credential in the active workspace is missing a name.\n\n' +
+      'Recreate or repair the credential in Adobe Developer Console, then try again.'
+    )
+  }
+
+  const imsCtx = config?.ims?.contexts?.[ctx]
+  if (!imsCtx) {
+    throw new Error(
+      `The IMS context "${ctx}" for the OAuth Server-to-Server credential was not found in your local aio configuration.\n\n` +
+      'Run `aio config ls --json` to verify the active configuration, or re-run `aio app use` / `aio console org select` to refresh it.'
+    )
+  }
+
+  return { ctx, imsCtx }
+}
+
 export function validateConfig (config) {
   const services = config?.project?.workspace?.details?.services
   if (!Array.isArray(services) || !services.some(s => s.code === 'AdobeIOManagementAPISDK')) {
     throw new Error('I/O Management API was not found in your workspace.')
   }
+
+  getServerToServerImsContext(config)
 }
 
 export function buildEnvVars (config, { noSuffix = false } = {}) {
-  const ctx = config.project.workspace.details.credentials
-    .find(c => c.integration_type === 'oauth_server_to_server')
-    ?.name.toLowerCase()
-
-  const imsCtx = config.ims.contexts[ctx]
+  const { imsCtx } = getServerToServerImsContext(config)
   const suffix = noSuffix ? '' : (config.project.workspace.name === 'Production' ? '_PROD' : '_STAGE')
 
   return {
