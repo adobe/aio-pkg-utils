@@ -3,6 +3,7 @@ import { Command } from 'commander'
 import { execa } from 'execa'
 
 export async function checkAioCli () {
+  console.error('$ aio --version')
   try {
     await execa('aio', ['--version'])
   } catch (err) {
@@ -18,6 +19,7 @@ export async function checkAioCli () {
 }
 
 export async function checkGhCli () {
+  console.error('$ gh --version')
   try {
     await execa('gh', ['--version'])
   } catch (err) {
@@ -34,6 +36,7 @@ export async function checkGhCli () {
 }
 
 export async function fetchAioConfig () {
+  console.error('$ aio config ls --json')
   const { stdout } = await execa('aio', ['config', 'ls', '--json'])
   return JSON.parse(stdout)
 }
@@ -76,6 +79,7 @@ export function formatEnvVars (envVars) {
 }
 
 export async function createGhEnvironment (envName) {
+  console.error(`$ gh api -X PUT repos/{owner}/{repo}/environments/${envName}`)
   try {
     await execa('gh', ['api', '-X', 'PUT', `repos/{owner}/{repo}/environments/${envName}`])
   } catch (err) {
@@ -93,6 +97,7 @@ export async function createGhEnvironment (envName) {
 export async function uploadSecrets (output, { envName = null } = {}) {
   const args = ['secret', 'set', '-f', '-']
   if (envName) args.push('--env', envName)
+  console.error(`$ gh ${args.join(' ')}`)
   await execa('gh', args, { input: output })
 }
 
