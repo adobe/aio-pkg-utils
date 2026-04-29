@@ -8,6 +8,7 @@ Mono-repo containing various utility libs in independent packages.
 | [aio-metrics-client](./packages/aio-metrics-client/README.md) | Node client for batching calls to metrics endpoint. | [![Version](https://img.shields.io/npm/v/@adobe/aio-metrics-client.svg)](https://npmjs.org/package/@adobe/aio-metrics-client)  |
 | [aio-app-builder-repos](./packages/aio-app-builder-repos/README.md) | Metadata of all the repos Adobe Developer App Builder uses |  [![Version](https://img.shields.io/npm/v/@adobe/aio-app-builder-repos.svg)](https://npmjs.org/package/@adobe/aio-app-builder-repos) |
 | [aio-batch-update](./packages/aio-batch-update/README.md) | Make batch changes across multiple repos using a Git patch | |
+| [ab-app-secrets-uploader](./packages/ab-app-secrets-uploader/README.md) | CLI tool for uploading App Builder app secrets to GitHub | [![Version](https://img.shields.io/npm/v/@adobe/ab-app-secrets-uploader.svg)](https://npmjs.org/package/@adobe/ab-app-secrets-uploader) |
 
 ## Contributing
 
