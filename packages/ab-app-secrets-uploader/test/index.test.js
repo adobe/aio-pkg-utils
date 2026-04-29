@@ -63,6 +63,29 @@ describe('validateConfig', () => {
   it('throws when services is missing', () => {
     expect(() => validateConfig({})).toThrow('I/O Management API was not found in your workspace.')
   })
+
+  it('throws when credentials are missing', () => {
+    const cfg = { project: { workspace: { details: { services: [{ code: 'AdobeIOManagementAPISDK' }], credentials: null } } } }
+    expect(() => validateConfig(cfg)).toThrow('missing workspace credentials')
+  })
+
+  it('throws when no oauth_server_to_server credential exists', () => {
+    const cfg = { project: { workspace: { details: { services: [{ code: 'AdobeIOManagementAPISDK' }], credentials: [{ integration_type: 'other' }] } } } }
+    expect(() => validateConfig(cfg)).toThrow('No OAuth Server-to-Server credential was found')
+  })
+
+  it('throws when oauth credential has no name', () => {
+    const cfg = { project: { workspace: { details: { services: [{ code: 'AdobeIOManagementAPISDK' }], credentials: [{ integration_type: 'oauth_server_to_server', name: '' }] } } } }
+    expect(() => validateConfig(cfg)).toThrow('missing a name')
+  })
+
+  it('throws when IMS context is not found in config', () => {
+    const cfg = {
+      ...stageConfig,
+      ims: { contexts: {} }
+    }
+    expect(() => validateConfig(cfg)).toThrow('IMS context')
+  })
 })
 
 describe('buildEnvVars', () => {
